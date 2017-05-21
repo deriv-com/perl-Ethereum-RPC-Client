@@ -5,39 +5,50 @@ use warnings;
 use Moo;
 use MojoX::JSON::RPC::Client;
 
-our $VERSION  = '0.01';
+our $VERSION = '0.01';
 
-has jsonrpc  => (is => "lazy", default => sub { MojoX::JSON::RPC::Client->new });
-has host     => (is => 'ro',   default => sub { '127.0.0.1' });
-has port     => (is => "lazy", default => 8545);
-has timeout  => (is => "lazy", default => 10);
+has jsonrpc => (
+    is      => "lazy",
+    default => sub { MojoX::JSON::RPC::Client->new });
+has host => (
+    is      => 'ro',
+    default => sub { '127.0.0.1' });
+has port => (
+    is      => "lazy",
+    default => 8545
+);
+has timeout => (
+    is      => "lazy",
+    default => 10
+);
 
+## no critic (RequireArgUnpacking)
 sub AUTOLOAD {
-   my $self   = shift;
+    my $self = shift;
 
-   my $method = $Ethereum::RPC::Client::AUTOLOAD;
-   $method =~ s/.*:://;
+    my $method = $Ethereum::RPC::Client::AUTOLOAD;
+    $method =~ s/.*:://;
 
-   return if ($method eq 'DESTROY');
+    return if ($method eq 'DESTROY');
 
-   my $url = "http://" . $self->host . ":" . $self->port;
+    my $url = "http://" . $self->host . ":" . $self->port;
 
-   $self->{id} = 1;
-   my $obj = {
-      id => $self->{id}++,
-      method => $method,
-      params => (ref $_[0] ? $_[0] : [@_]),
-   };
-   my $res = $self->jsonrpc->call( $url, $obj );
-   if($res) {
-      if ($res->is_error) {
-         return $res->error_message;
-      }
+    $self->{id} = 1;
+    my $obj = {
+        id     => $self->{id}++,
+        method => $method,
+        params => (ref $_[0] ? $_[0] : [@_]),
+    };
+    my $res = $self->jsonrpc->call($url, $obj);
+    if ($res) {
+        if ($res->is_error) {
+            return $res->error_message;
+        }
 
-      return $res->result;
-   }
+        return $res->result;
+    }
 
-   return;
+    return;
 }
 
 1;
