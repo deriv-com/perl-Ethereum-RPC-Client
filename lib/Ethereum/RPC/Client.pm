@@ -17,10 +17,6 @@ has port => (
     is      => "lazy",
     default => 8545
 );
-has timeout => (
-    is      => "lazy",
-    default => 10
-);
 
 ## no critic (RequireArgUnpacking)
 sub AUTOLOAD {
