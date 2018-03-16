@@ -1,3 +1,6 @@
+# perl-Ethereum-RPC-Client
+
+
 [![Build Status](https://travis-ci.org/binary-com/perl-Ethereum-Contract.svg?branch=master)](https://travis-ci.org/binary-com/perl-Ethereum-Contract)
 [![codecov](https://codecov.io/gh/binary-com/perl-Ethereum-Contract/branch/master/graph/badge.svg)](https://codecov.io/gh/binary-com/perl-Ethereum-Contract)
 
@@ -20,9 +23,8 @@ perl-Ethereum-RPC
         
         my $coinbase = $rpc_client->eth_coinbase;
         
-        my $contract = Ethereum::Contract->new({
+        my $contract = $rpc_client->contract({
             contract_abi    => $abi,
-            rpc_client      => $rpc_client,
             from            => $from,
             gas             => $gas,
         });
@@ -47,9 +49,11 @@ perl-Ethereum-Contract is a library to enable perl to call the contract function
 - Loading Contract
 
     ```perl
-        my $contract = Ethereum::Contract->new({
+        
+        my $rpc_client = Ethereum::RPC::Client->new; 
+
+        my $contract = $rpc_client->contract({
             contract_abi    => $abi,
-            rpc_client      => $rpc_client,
             from            => $coinbase,
             gas             => 3000000,
         });
@@ -64,7 +68,8 @@ perl-Ethereum-Contract is a library to enable perl to call the contract function
 - Calling a Contract function
 
     ```perl
-        $contract->invoke($function_name, param1, param2, ...)->call->to_big_int;
+        my ($message, $error) = $contract->invoke($function_name, param1, param2, ...)->call();
+        $big_int = $message->to_big_int unless $error;
     ```
 
 # CAVEATS
@@ -83,4 +88,3 @@ Binary.com
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
-# perl-Ethereum-RPC-Client
