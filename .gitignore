@@ -31,5 +31,6 @@ inc/
 /Makefile
 /Makefile.old
 /MANIFEST.bak
+/MANIFEST
 /pm_to_blib
 /*.zip

@@ -1,6 +1,3 @@
-# perl-Ethereum-RPC-Client
-
-
 [![Build Status](https://travis-ci.org/binary-com/perl-Ethereum-Contract.svg?branch=master)](https://travis-ci.org/binary-com/perl-Ethereum-Contract)
 [![codecov](https://codecov.io/gh/binary-com/perl-Ethereum-Contract/branch/master/graph/badge.svg)](https://codecov.io/gh/binary-com/perl-Ethereum-Contract)
 
@@ -15,7 +12,6 @@ perl-Ethereum-RPC
         use strict;
         use warnings;
         use Ethereum::RPC::Client;
-        use Ethereum::Contract::Contract;
         
         my $abi = ...
         my $bytecode = ...
@@ -45,6 +41,13 @@ perl-Ethereum-RPC
 perl-Ethereum-Contract is a library to enable perl to call the contract functions using RPC calls.
 
 # USAGE
+
+- Calling RPC commands
+
+    ```perl
+        my $rpc_client = Ethereum::RPC::Client->new; 
+        my $balance = $rpc_client->eth_getBalance("0x0...", "latest");
+    ```
 
 - Loading Contract
 
@@ -78,7 +81,6 @@ This software is in an early state.
 
 ### REQUIREMENTS
 * perl 5
-* [Ethereum::RPC::Client](https://github.com/binary-com/perl-Ethereum-RPC-Client)
 
 # AUTHOR
 
