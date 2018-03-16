@@ -4,21 +4,23 @@ use strict;
 use warnings;
 use Math::BigInt;
 
+our $VERSION = '0.001';
+
 =head1 NAME
 
     Ethereum::RPC::Contract::Helper::UnitConversion - Ethereum Unit Converter
-    
-    wei:        ‘1’
-    kwei:       ‘1E3’
-    mwei:       ‘1E6’
-    gwei:       ‘1E9’
-    szabo:      ‘1E12’
-    finney:     ‘1E15’
-    ether:      ‘1E18’
-    kether:     ‘1E21’
-    mether:     ‘1E24’
-    gether:     ‘1E27’
-    tether:     ‘1E30’
+
+    wei:        '1'
+    kwei:       '1E3'
+    mwei:       '1E6'
+    gwei:       '1E9'
+    szabo:      '1E12'
+    finney:     '1E15'
+    ether:      '1E18'
+    kether:     '1E21'
+    mether:     '1E24'
+    gether:     '1E27'
+    tether:     '1E30'
 
 =cut
 

@@ -5,6 +5,8 @@ use warnings;
 
 use Path::Tiny;
 
+our $VERSION = '0.001';
+
 =head1 NAME
 
     Ethereum::RPC::Contract::Helper::ImportHelper - ImportHelper
@@ -18,9 +20,9 @@ use JSON::MaybeXS;
 
 Auxiliar to get bytecode and the ABI from the compiled truffle json.
 
-Parameters: 
+Parameters:
     file path
-    
+
 Return:
     {abi, bytecode}
 

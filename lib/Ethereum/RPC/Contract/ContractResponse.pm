@@ -3,6 +3,8 @@ package Ethereum::RPC::Contract::ContractResponse;
 use strict;
 use warnings;
 
+our $VERSION = '0.001';
+
 =head1 NAME
 
     Ethereum::Contract::RPC::ContractResponse - Centralize contract response
@@ -21,9 +23,9 @@ has response => ( is => 'ro' );
 
 Convert response to a Math::BigInt if not undef
 
-Parameters: 
+Parameters:
     hexadecimal response
-    
+
 Return:
     new Math::BigInt
 
@@ -39,9 +41,9 @@ sub to_big_int {
 
 Convert response to a Math::BigFloat if not undef
 
-Parameters: 
+Parameters:
     hexadecimal response
-    
+
 Return:
     new Math::BigFloat
 
@@ -58,9 +60,9 @@ sub to_big_float {
 
 Convert response to a string if not undef
 
-Parameters: 
+Parameters:
     hexadecimal response
-    
+
 Return:
     string
 
@@ -68,12 +70,12 @@ Return:
 
 sub to_string {
     my $self = shift;
-    
+
     return undef unless $self->response;
-    
+
     my $packed_response = pack('H*', substr($self->response, -64));
     $packed_response =~ s/\0+$//;
-    
+
     return $packed_response;
 }
 
@@ -81,22 +83,22 @@ sub to_string {
 
 Convert response to a hexadecimal if not undef and is not already a hex
 
-Parameters: 
+Parameters:
     hexadecimal response
-    
+
 Return:
     hexadecimal string
 
 =cut
 sub to_hex {
     my $self = shift;
-    
+
     return undef unless $self->response;
-    
+
     if( $self->response =~ /^0x[0-9A-F]+$/i ) {
         return $self->response;
     }
-    
+
     return undef;
 }
 
