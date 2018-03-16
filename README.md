@@ -7,34 +7,31 @@ perl-Ethereum-RPC
 
 # SYNOPSIS
 
-    ```perl
-        #!/usr/bin/perl
-        use strict;
-        use warnings;
-        use Ethereum::RPC::Client;
-        
-        my $abi = ...
-        my $bytecode = ...
-        my $rpc_client = Ethereum::RPC::Client->new;
-        
-        my $coinbase = $rpc_client->eth_coinbase;
-        
-        my $contract = $rpc_client->contract({
-            contract_abi    => $abi,
-            from            => $from,
-            gas             => $gas,
-        });
-            
-        # Deploying a Contract
-        # get_contract_address ( number of seconds that will be expected to return the contract address )
-        my $contract->deploy($bytecode)->get_contract_address(35);
-        
-        die $response->error if $response->error;
-        
-        print $contract->invoke("functionname", qw{param1 param2 param3})->call->to_big_int();
-        
-        my $hash = $contract->invoke("functionname", $param1, $param2, $param3)->send;
-    ```
+```perl
+use strict;
+use warnings;
+use Ethereum::RPC::Client;
+
+my $abi = ...;
+my $bytecode = ...;
+my $rpc_client = Ethereum::RPC::Client->new;
+
+my $coinbase = $rpc_client->eth_coinbase;
+
+my $contract = $rpc_client->contract({
+    contract_abi    => $abi,
+    from            => $from,
+    gas             => $gas,
+});
+my $contract->deploy($bytecode)->get_contract_address(35);
+
+die $response->error if $response->error;
+
+print $contract->invoke("functionname", qw{param1 param2 param3})->call->to_big_int();
+
+my $hash = $contract->invoke("functionname", $param1, $param2, $param3)->send;
+    
+```
 
 # DESCRIPTION
 
@@ -52,7 +49,6 @@ perl-Ethereum-Contract is a library to enable perl to call the contract function
 - Loading Contract
 
     ```perl
-        
         my $rpc_client = Ethereum::RPC::Client->new; 
 
         my $contract = $rpc_client->contract({
@@ -90,3 +86,4 @@ Binary.com
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
+
