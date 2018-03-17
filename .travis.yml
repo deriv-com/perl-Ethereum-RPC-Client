@@ -30,6 +30,8 @@ instal:
    - cpanm --quiet --notest Dist::Zilla Dist::Zilla::App::Command::cover App::cpm Devel::Cover::Report::Codecov
    - cpm install -w 2 --mirror=http://cpan.cpantesters.org/ -g $(dzil authordeps --missing)
    - cpm install -w 2 --mirror=http://cpan.cpantesters.org/ -g $(dzil listdeps --author --missing)
+before_script:
+  - coverage-setup
 script:
    - dzil smoke --release --author && dzil cover -test -report codecov && dzil xtest
 
