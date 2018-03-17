@@ -19,13 +19,9 @@ before_install:
    - sudo apt-get install geth -y -qq
    - yes | geth --dev --mine --rpc --rpcaddr 0.0.0.0 --verbosity 0 --rpcapi eth,web3,personal,debug &
 instal:
-   - cpan-install --deps       # installs prereqs, including recommends
-   - cpan-install --coverage   # installs converage prereqs, if enabled
    - cpanm --quiet --notest Dist::Zilla Dist::Zilla::App::Command::cover App::cpm Devel::Cover::Report::Codecov
    - cpm install -w 2 --mirror=http://cpan.cpantesters.org/ -g $(dzil authordeps --missing)
    - cpm install -w 2 --mirror=http://cpan.cpantesters.org/ -g $(dzil listdeps --author --missing)
-before_script:
-  - coverage-setup
 script:
    - dzil smoke --release --author && dzil cover -test -report codecov && dzil xtest
 
