@@ -20,4 +20,4 @@ install:
    - cpm install -w 2 --mirror=http://cpan.cpantesters.org/ -g $(dzil authordeps --missing)
    - cpm install -w 2 --mirror=http://cpan.cpantesters.org/ -g $(dzil listdeps --author --missing)
 script:
-   - dzil smoke --release --author && dzil cover -test -report codecov && dzil xtest:
+   - dzil smoke --release --author && dzil cover -test -report codecov && dzil xtest
