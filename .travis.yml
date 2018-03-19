@@ -18,7 +18,7 @@ before_install:
    - sudo apt-get update -qq
    - sudo apt-get install geth -y -qq
    - yes | geth --dev --mine --rpc --rpcaddr 0.0.0.0 --verbosity 0 --rpcapi eth,web3,personal,debug &
-instal:
+install:
    - cpanm --quiet --notest Dist::Zilla Dist::Zilla::App::Command::cover App::cpm Devel::Cover::Report::Codecov
    - cpm install -w 2 --mirror=http://cpan.cpantesters.org/ -g $(dzil authordeps --missing)
    - cpm install -w 2 --mirror=http://cpan.cpantesters.org/ -g $(dzil listdeps --author --missing)

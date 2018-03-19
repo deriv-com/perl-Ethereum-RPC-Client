@@ -3,7 +3,7 @@ requires 'Moo';
 requires 'MojoX::JSON::RPC', 0;
 requires 'Math::BigInt', '>= 1.999811';
 requires 'Math::BigFloat', '>= 1.999811';
-requires 'Dist::Zilla', '>= 6.011';
+
 on test => sub {
     requires 'Test::More', '0.96';
 };
