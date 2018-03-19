@@ -1,4 +1,5 @@
 requires 'perl', '5.008005';
+requires 'Mojolicious', '== 7.29';
 requires 'Moo';
 requires 'MojoX::JSON::RPC', '>= 0.10';
 requires 'Math::BigInt', '>= 1.999811';
