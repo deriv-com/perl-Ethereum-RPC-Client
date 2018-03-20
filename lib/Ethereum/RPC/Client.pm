@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Moo;
-use Data::Dumper;
 use MojoX::JSON::RPC::Client;
 
 use Ethereum::RPC::Contract;
