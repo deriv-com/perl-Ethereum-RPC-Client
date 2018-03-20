@@ -2,8 +2,11 @@ package Ethereum::RPC::Client;
 
 use strict;
 use warnings;
+
 use Moo;
 use MojoX::JSON::RPC::Client;
+
+use Ethereum::RPC::Contract;
 
 our $VERSION = '0.01';
 
@@ -46,6 +49,30 @@ sub AUTOLOAD {
 
     return;
 }
+
+=head2 contract
+
+Creates a new contract instance
+
+Parameters:
+    contract_address    ( Optional - only if the contract already exists ),
+    contract_abi        ( Required - https://solidity.readthedocs.io/en/develop/abi-spec.html ),
+    from                ( Optional - Address )
+    gas                 ( Optional - Integer gas )
+    gas_price           ( Optional - Integer gasPrice )
+
+Return:
+    New contract instance
+
+=cut
+
+
+sub contract {
+    my $self = shift;
+    my $params = shift;
+    return Ethereum::RPC::Contract->new(( %{$params}, rpc_client => $self ));
+}
+
 
 1;
 
