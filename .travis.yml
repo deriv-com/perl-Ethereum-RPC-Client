@@ -4,19 +4,17 @@ matrix:
     fast_finish: true
 perl:
    - '5.24'
-   - '5.22'
-   - '5.20'
-   - '5.18'
-   - '5.16'
    - '5.14'
 before_install:
    - git config --global user.name "TravisCI"
    - git config --global user.email $HOSTNAME":not-for-mail@travis-ci.org"
+   - curl -sL https://deb.nodesource.com/setup_9.x | sudo bash
+   - sudo apt-get install -y nodejs
+   - sudo npm install ganache-cli --g
+   - ganache-cli -u 0 &
 install:
-   - cpanm --quiet --notest Dist::Zilla Dist::Zilla::App::Command::cover App::cpm Devel::Cover::Report::Codecov
+   - cpanm --quiet --notest Dist::Zilla Dist::Zilla::App::Command::cover App::cpm Devel::Cover::Report::Codecov https://cpan.metacpan.org/authors/id/S/SR/SRI/Mojolicious-7.29.tar.gz https://cpan.metacpan.org/authors/id/B/BI/BINGOS/ExtUtils-MakeMaker-7.30.tar.gz
    - cpm install -w 2 --mirror=http://cpan.cpantesters.org/ -g $(dzil authordeps --missing)
    - cpm install -w 2 --mirror=http://cpan.cpantesters.org/ -g $(dzil listdeps --author --missing)
-
 script:
    - dzil smoke --release --author && dzil cover -test -report codecov && dzil xtest
-
