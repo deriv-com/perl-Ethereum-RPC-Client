@@ -3,6 +3,7 @@ use warnings;
 use Test::More;
 use Ethereum::RPC::Client;
 use Ethereum::RPC::Contract::Helper::ImportHelper;
+use Ethereum::RPC::Contract::Helper::UnitConversion;
 use Math::BigInt;
 use JSON;
 
@@ -19,7 +20,18 @@ my $contract = $rpc_client->contract({
     rpc_client      => $rpc_client,
 });
 
+my $coinbase = $rpc_client->eth_coinbase();
+
+my $res = $rpc_client->eth_sendTransaction([{
+    to          => $coinbase;
+    from        => $coinbase,
+    gas         => Ethereum::RPC::Contract::Helper::UnitConversion::to_wei(400000),
+}]);
+
+sleep 2;
+
 my $block = $rpc_client->eth_getBlockByNumber('latest', JSON->true);
+ok $block;
 
 my $timestamp   = hex $block->{timestamp};
 my $start_time   = $timestamp + 86400;
@@ -34,6 +46,7 @@ $contract->gas(4000000);
 $contract->from($coinbase);
 
 ($message, $error) = $contract->invoke_deploy($truffle_project->{bytecode}, $start_time, $end_time, $rate, $wallet)->get_contract_address(35);
+ok !$error;
 
 $contract->contract_address($message->response);
 

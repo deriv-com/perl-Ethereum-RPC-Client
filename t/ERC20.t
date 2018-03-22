@@ -51,12 +51,16 @@ my $account_one_balance = $message->to_big_int;
 ($_, $error) = $contract->invoke("approve", $account_list[1], 1000)->send_transaction();
 ok !$error;
 
+sleep 2;
+
 ($message, $error) = $contract->invoke("allowance", $coinbase, $account_list[1])->call_transaction();
 ok !$error;
 is $message->to_big_int, 1000;
 
 ($_, $error) = $contract->invoke("transfer", $account_list[1], 1000)->send_transaction();
 ok !$error;
+
+sleep 2;
 
 ($message, $error) = $contract->invoke("balanceOf", $coinbase)->call_transaction();
 ok !$error;
