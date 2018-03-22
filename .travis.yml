@@ -16,7 +16,7 @@ before_install:
    - sudo cp $TRAVIS_BUILD_DIR/config/geth.conf /etc/supervisor/conf.d/
    - sudo supervisorctl reread
    - sudo supervisorctl update
-   - sleep 5
+   - sleep 10
    - cat /var/log/supervisor/geth.err.log
    - sh $TRAVIS_BUILD_DIR/config/geth_test.sh
 install:
