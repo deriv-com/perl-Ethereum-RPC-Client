@@ -20,8 +20,6 @@ my $contract = $rpc_client->contract({
     rpc_client      => $rpc_client,
 });
 
-my $coinbase = $rpc_client->eth_coinbase();
-
 my $res = $rpc_client->eth_sendTransaction([{
     to          => $coinbase;
     from        => $coinbase,
