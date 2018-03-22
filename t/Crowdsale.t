@@ -21,7 +21,7 @@ my $contract = $rpc_client->contract({
 });
 
 my $res = $rpc_client->eth_sendTransaction([{
-    to          => $coinbase;
+    to          => $coinbase,
     from        => $coinbase,
     gas         => Ethereum::RPC::Contract::Helper::UnitConversion::to_wei(400000),
 }]);
