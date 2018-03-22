@@ -4,18 +4,18 @@ use strict;
 use warnings;
 
 use Moo;
-use MojoX::JSON::RPC::Client;
+use HTTP::Request;
+use JSON::MaybeXS;
+use LWP::UserAgent;
 
 use Ethereum::RPC::Contract;
 
 our $VERSION = '0.01';
 
-has jsonrpc => (
-    is      => "lazy",
-    default => sub { MojoX::JSON::RPC::Client->new });
 has host => (
     is      => 'ro',
-    default => sub { '127.0.0.1' });
+    default => sub { '127.0.0.1' }
+);
 has port => (
     is      => "lazy",
     default => 8545
@@ -34,20 +34,34 @@ sub AUTOLOAD {
 
     $self->{id} = 1;
     my $obj = {
-        id     => $self->{id}++,
-        method => $method,
-        params => (ref $_[0] ? $_[0] : [@_]),
+        id      => $self->{id}++,
+        method  => $method,
+        params  => (ref $_[0] ? $_[0] : [@_]),
+        jsonrpc => "2.0"
     };
-    my $res = $self->jsonrpc->call($url, $obj);
-    if ($res) {
-        if ($res->is_error) {
-            return $res->error_message;
-        }
+    my $res = $self->_request($url, $obj);
 
-        return $res->result;
-    }
+    return $res->{result} unless $res->{error};
+    return $res->{error} if $res;
+    return undef;
 
-    return;
+}
+
+
+sub _request {
+    my ($self, $url, $json_data) = @_;
+
+    my $req = HTTP::Request->new(POST => $url);
+    $req->header('Content-Type' => 'application/json');
+
+    my $ua = LWP::UserAgent->new;
+    my $data = encode_json($json_data);
+    $req->add_content_utf8($data);
+
+    my $content = $ua->request($req)->{ _content };
+
+    my $decoded = decode_json($content);
+    return $decoded;
 }
 
 =head2 contract
