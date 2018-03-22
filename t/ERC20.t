@@ -25,7 +25,9 @@ my ($message, $error) = $contract->invoke_deploy($truffle_project->{bytecode})->
 die $error if $error;
 
 $contract->contract_address($message->response);
-    
+
+$rpc_client->personal_newAccount("test");
+
 my @account_list = @{$rpc_client->eth_accounts()};
 
 ($message, $error) = $contract->invoke("name")->call_transaction();
