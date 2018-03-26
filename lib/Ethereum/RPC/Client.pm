@@ -4,10 +4,8 @@ use strict;
 use warnings;
 
 use Moo;
-use HTTP::Request;
 use JSON::MaybeXS;
-use LWP::UserAgent;
-
+use Mojo::UserAgent;
 use Ethereum::RPC::Contract;
 
 our $VERSION = '0.01';
@@ -17,8 +15,12 @@ has host => (
     default => sub { '127.0.0.1' }
 );
 has port => (
-    is      => "lazy",
+    is      => "ro",
     default => 8545
+);
+has http_client => (
+    is      => 'ro',
+    default => sub{ Mojo::UserAgent->new }
 );
 
 ## no critic (RequireArgUnpacking)
@@ -39,29 +41,13 @@ sub AUTOLOAD {
         params  => (ref $_[0] ? $_[0] : [@_]),
         jsonrpc => "2.0"
     };
-    my $res = $self->_request($url, $obj);
 
-    return $res->{result} unless $res->{error};
-    return $res->{error} if $res;
+    my $res = $self->http_client->post($url => json => $obj)->result;
+
+    return $res->json->{result} unless $res->is_error;
+    return $res->message if $res;
     return undef;
 
-}
-
-
-sub _request {
-    my ($self, $url, $json_data) = @_;
-
-    my $req = HTTP::Request->new(POST => $url);
-    $req->header('Content-Type' => 'application/json');
-
-    my $ua = LWP::UserAgent->new;
-    my $data = encode_json($json_data);
-    $req->add_content_utf8($data);
-
-    my $content = $ua->request($req)->{ _content };
-
-    my $decoded = decode_json($content);
-    return $decoded;
 }
 
 =head2 contract
@@ -86,7 +72,6 @@ sub contract {
     my $params = shift;
     return Ethereum::RPC::Contract->new(( %{$params}, rpc_client => $self ));
 }
-
 
 1;
 

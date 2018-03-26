@@ -1,6 +1,5 @@
 requires 'Moo';
-requires 'HTTP::Request', '>= 6.15';
-requires 'LWP::UserAgent', '>= 6.33';
+requires 'Mojo::UserAgent';
 requires 'Math::BigInt', '>= 1.999811';
 requires 'Math::BigFloat', '>= 1.999811';
 requires 'perl', '5.014';
