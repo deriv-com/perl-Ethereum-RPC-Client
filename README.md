@@ -24,17 +24,14 @@ my $contract = $rpc_client->contract({
     gas             => $gas,
 });
 
-my ($message, $error) = undef, undef;
+my $message = $contract->deploy($bytecode)->get_contract_address(35);
+die $message->failure if $message->is_failed;
 
-my ($message, $error) = $contract->deploy($bytecode)->get_contract_address(35);
+$message = $contract->invoke("functionname", qw{param1 param2 param3})->call_transaction();
+print $message->get->to_big_int() unless $error;
 
-die $error if $error;
+$message = $contract->invoke("functionname", $param1, $param2, $param3)->send_transaction();
 
-my ($message, $error) = $contract->invoke("functionname", qw{param1 param2 param3})->call_transaction();
-print $message->to_big_int() unless $error;
-
-my ($message, $error) = $contract->invoke("functionname", $param1, $param2, $param3)->send_transaction();
-    
 ```
 
 # DESCRIPTION
@@ -71,8 +68,8 @@ perl-Ethereum-Contract is a library to enable perl to call the contract function
 - Calling a Contract function
 
     ```perl
-        my ($message, $error) = $contract->invoke($function_name, param1, param2, ...)->call_transaction();
-        $big_int = $message->to_big_int unless $error;
+        my $message = $contract->invoke($function_name, param1, param2, ...)->call_transaction();
+        $big_int = $message->get->to_big_int unless $message->is_failed;
     ```
 
 # CAVEATS

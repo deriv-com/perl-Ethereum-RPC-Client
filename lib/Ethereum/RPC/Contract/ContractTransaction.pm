@@ -13,6 +13,8 @@ our $VERSION = '0.001';
 
 
 use Moo;
+use Future;
+
 use Ethereum::RPC::Contract::ContractResponse;
 use Ethereum::RPC::Contract::Helper::UnitConversion;
 
@@ -45,9 +47,9 @@ sub call_transaction {
         data  => $self->data,
     }, "latest"]);
 
-    return (Ethereum::RPC::Contract::ContractResponse->new({ response => $res }), undef) if $res and $res =~ /^0x/;
-
-    return ( undef, $res );
+    my $future = Future->new;
+    return $future->done(Ethereum::RPC::Contract::ContractResponse->new({ response => $res })) if $res and $res =~ /^0x/;
+    return $future->fail($res);
 
 }
 
@@ -65,7 +67,8 @@ Return:
 sub send_transaction {
     my $self = shift;
 
-    return ( undef, "the transaction can't be sent without the GAS parameter" ) unless $self->gas;
+    my $future = Future->new;
+    return $future->fail("the transaction can't be sent without the GAS parameter") unless $self->gas;
 
     my $res = $self->rpc_client->eth_sendTransaction([{
         to          => $self->contract_address,
@@ -75,9 +78,8 @@ sub send_transaction {
         data        => $self->data,
     }]);
 
-    return (Ethereum::RPC::Contract::ContractResponse->new({ response => $res }), undef) if $res and $res =~ /^0x/;
-
-    return ( undef, $res );
+    return $future->done(Ethereum::RPC::Contract::ContractResponse->new({ response => $res })) if $res and $res =~ /^0x/;
+    return $future->fail($res);
 
 }
 
@@ -98,23 +100,22 @@ sub get_contract_address {
 
     my ($self, $wait_seconds, $send_response) = @_;
 
-    my ($transaction, $error) = undef, undef;
-    ($transaction, $error) = $self->send_transaction unless $send_response;
+    my $transaction = $send_response // $self->send_transaction();
+    return $transaction if $transaction->is_failed;
 
-    return ( undef, $error ) if $error;
-
-    my $deployed = $self->rpc_client->eth_getTransactionReceipt($transaction->response);
+    my $deployed = $self->rpc_client->eth_getTransactionReceipt($transaction->get->response);
 
     while ($wait_seconds and not $deployed and $wait_seconds > 0) {
         sleep(1);
         $wait_seconds--;
-        $deployed = $self->rpc_client->eth_getTransactionReceipt($transaction->response);
+        $deployed = $self->rpc_client->eth_getTransactionReceipt($transaction->get->response);
     }
 
-    return ( Ethereum::RPC::Contract::ContractResponse->new({ response => $deployed->{contractAddress} }), undef )
+    my $future = Future->new;
+    return $future->done(Ethereum::RPC::Contract::ContractResponse->new({ response => $deployed->{contractAddress} }))
         if $deployed and ref($deployed) eq 'HASH';
 
-    return ( undef, "Can't get the contract address for transaction: $transaction" );
+    return $future->fail("Can't get the contract address for transaction: " . $transaction->get->response);
 
 }
 

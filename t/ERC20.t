@@ -20,56 +20,56 @@ my $contract = $rpc_client->contract({
     from            => $coinbase,
     gas             => 4000000,
 });
-    
-my ($message, $error) = $contract->invoke_deploy($truffle_project->{bytecode})->get_contract_address(35);
-die $error if $error;
 
-$contract->contract_address($message->response);
+my $response = $contract->invoke_deploy($truffle_project->{bytecode})->get_contract_address(35);
+die $response->get if $response->is_failed;
+
+$contract->contract_address($response->get->response);
 
 $rpc_client->personal_newAccount("test");
 
 my @account_list = @{$rpc_client->eth_accounts()};
 
-($message, $error) = $contract->invoke("name")->call_transaction();
-ok !$error;
-is $message->to_string, "SimpleToken";
+$response = $contract->invoke("name")->call_transaction();
+ok !$response->is_failed;
+is $response->get->to_string, "SimpleToken";
 
-($message, $error) = $contract->invoke("symbol")->call_transaction();
-ok !$error;
-is $message->to_string, "SIM";
+$response = $contract->invoke("symbol")->call_transaction();
+ok !$response->is_failed;
+is $response->get->to_string, "SIM";
 
-($message, $error) = $contract->invoke("decimals")->call_transaction();
-ok !$error;
-is $message->to_big_int, 18;
+$response = $contract->invoke("decimals")->call_transaction();
+ok !$response->is_failed;
+is $response->get->to_big_int, 18;
 
-($message, $error) = $contract->invoke("balanceOf", $coinbase)->call_transaction();
-ok !$error;
-my $coinbase_balance = $message->to_big_int;
+$response = $contract->invoke("balanceOf", $coinbase)->call_transaction();
+ok !$response->is_failed;
+my $coinbase_balance = $response->get->to_big_int;
 
-($message, $error) = $contract->invoke("balanceOf", $account_list[1])->call_transaction();
-ok !$error;
-my $account_one_balance = $message->to_big_int;
+$response = $contract->invoke("balanceOf", $account_list[1])->call_transaction();
+ok !$response->is_failed;
+my $account_one_balance = $response->get->to_big_int;
 
-($_, $error) = $contract->invoke("approve", $account_list[1], 1000)->send_transaction();
-ok !$error;
-
-sleep 2;
-
-($message, $error) = $contract->invoke("allowance", $coinbase, $account_list[1])->call_transaction();
-ok !$error;
-is $message->to_big_int, 1000;
-
-($_, $error) = $contract->invoke("transfer", $account_list[1], 1000)->send_transaction();
-ok !$error;
+$response = $contract->invoke("approve", $account_list[1], 1000)->send_transaction();
+ok !$response->is_failed;
 
 sleep 2;
 
-($message, $error) = $contract->invoke("balanceOf", $coinbase)->call_transaction();
-ok !$error;
-is $message->to_big_int, Math::BigInt->new($coinbase_balance - 1000);
+$response = $contract->invoke("allowance", $coinbase, $account_list[1])->call_transaction();
+ok !$response->is_failed;
+is $response->get->to_big_int, 1000;
 
-($message, $error) = $contract->invoke("balanceOf", $account_list[1])->call_transaction();
-ok !$error;
-is $message->to_big_int, Math::BigInt->new($account_one_balance + 1000);
+$response = $contract->invoke("transfer", $account_list[1], 1000)->send_transaction();
+ok !$response->is_failed;
+
+sleep 2;
+
+$response = $contract->invoke("balanceOf", $coinbase)->call_transaction();
+ok !$response->is_failed;
+is $response->get->to_big_int, Math::BigInt->new($coinbase_balance - 1000);
+
+$response = $contract->invoke("balanceOf", $account_list[1])->call_transaction();
+ok !$response->is_failed;
+is $response->get->to_big_int, Math::BigInt->new($account_one_balance + 1000);
 
 done_testing();

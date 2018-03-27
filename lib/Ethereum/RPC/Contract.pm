@@ -142,7 +142,9 @@ Parameters:
     params          ( Required - the parameters args given by the method call )
 
 Return:
-    Ethereum::Contract::ContractTransaction
+    Future object
+        on_done: Ethereum::Contract::ContractTransaction
+        on_fail: string message
 
 =cut
 
