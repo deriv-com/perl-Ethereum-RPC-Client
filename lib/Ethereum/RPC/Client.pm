@@ -2,20 +2,25 @@ package Ethereum::RPC::Client;
 
 use strict;
 use warnings;
+
 use Moo;
-use MojoX::JSON::RPC::Client;
+use JSON::MaybeXS;
+use Mojo::UserAgent;
+use Ethereum::RPC::Contract;
 
 our $VERSION = '0.01';
 
-has jsonrpc => (
-    is      => "lazy",
-    default => sub { MojoX::JSON::RPC::Client->new });
 has host => (
     is      => 'ro',
-    default => sub { '127.0.0.1' });
+    default => sub { '127.0.0.1' }
+);
 has port => (
-    is      => "lazy",
+    is      => "ro",
     default => 8545
+);
+has http_client => (
+    is      => 'ro',
+    default => sub{ Mojo::UserAgent->new }
 );
 
 ## no critic (RequireArgUnpacking)
@@ -31,20 +36,41 @@ sub AUTOLOAD {
 
     $self->{id} = 1;
     my $obj = {
-        id     => $self->{id}++,
-        method => $method,
-        params => (ref $_[0] ? $_[0] : [@_]),
+        id      => $self->{id}++,
+        method  => $method,
+        params  => (ref $_[0] ? $_[0] : [@_]),
+        jsonrpc => "2.0"
     };
-    my $res = $self->jsonrpc->call($url, $obj);
-    if ($res) {
-        if ($res->is_error) {
-            return $res->error_message;
-        }
 
-        return $res->result;
-    }
+    my $res = $self->http_client->post($url => json => $obj)->result;
 
-    return;
+    return $res->json->{result} unless $res->is_error;
+    return $res->message if $res;
+    return undef;
+
+}
+
+=head2 contract
+
+Creates a new contract instance
+
+Parameters:
+    contract_address    ( Optional - only if the contract already exists ),
+    contract_abi        ( Required - https://solidity.readthedocs.io/en/develop/abi-spec.html ),
+    from                ( Optional - Address )
+    gas                 ( Optional - Integer gas )
+    gas_price           ( Optional - Integer gasPrice )
+
+Return:
+    New contract instance
+
+=cut
+
+
+sub contract {
+    my $self = shift;
+    my $params = shift;
+    return Ethereum::RPC::Contract->new(( %{$params}, rpc_client => $self ));
 }
 
 1;
