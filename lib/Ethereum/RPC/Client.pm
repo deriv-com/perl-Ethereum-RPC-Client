@@ -8,20 +8,18 @@ use JSON::MaybeXS;
 use Mojo::UserAgent;
 use Ethereum::RPC::Contract;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 has host => (
     is      => 'ro',
-    default => sub { '127.0.0.1' }
-);
+    default => sub { '127.0.0.1' });
 has port => (
     is      => "ro",
     default => 8545
 );
 has http_client => (
     is      => 'ro',
-    default => sub{ Mojo::UserAgent->new }
-);
+    default => sub { Mojo::UserAgent->new });
 
 ## no critic (RequireArgUnpacking)
 sub AUTOLOAD {
@@ -66,11 +64,10 @@ Return:
 
 =cut
 
-
 sub contract {
-    my $self = shift;
+    my $self   = shift;
     my $params = shift;
-    return Ethereum::RPC::Contract->new(( %{$params}, rpc_client => $self ));
+    return Ethereum::RPC::Contract->new((%{$params}, rpc_client => $self));
 }
 
 1;
