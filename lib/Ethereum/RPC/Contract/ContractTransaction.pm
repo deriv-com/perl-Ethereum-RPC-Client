@@ -49,7 +49,7 @@ sub call_transaction {
 
     my $future = Future->new;
     return $future->done(Ethereum::RPC::Contract::ContractResponse->new({ response => $res })) if $res and $res =~ /^0x/;
-    return $future->fail($res);
+    return $future->fail($res || "Can't call transaction");
 
 }
 
@@ -80,7 +80,7 @@ sub send_transaction {
     my $res = $self->rpc_client->eth_sendTransaction([$params]);
 
     return $future->done(Ethereum::RPC::Contract::ContractResponse->new({ response => $res })) if $res and $res =~ /^0x/;
-    return $future->fail($res);
+    return $future->fail($res || "Can't send transaction");
 
 }
 

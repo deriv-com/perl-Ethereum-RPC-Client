@@ -68,9 +68,9 @@ sub BUILD {
     my @decoded_json = @{decode_json($self->contract_abi)};
 
     for my $json_input (@decoded_json) {
-        if ( $json_input->{type}  eq 'function' ) {
-            $self->contract_decoded->{$json_input->{name}} = [] unless $self->contract_decoded->{$json_input->{name}};
-            push(@{$self->contract_decoded->{$json_input->{name}}}, \@{$json_input->{inputs}}) if scalar @{$json_input->{inputs}} > 0;
+        if ( $json_input->{type} eq 'function' ) {
+            $self->contract_decoded->{$json_input->{name}} ||= [];
+            push(@{$self->contract_decoded->{$json_input->{name}}}, $json_input->{inputs}) if scalar @{$json_input->{inputs}} > 0;
         }
     }
 
@@ -127,8 +127,7 @@ sub get_function_id {
     my @selected_data = ();
     if (scalar @inputs > 0) {
         for my $v (@inputs) {
-            @selected_data = @{$v} if $params_size and @{$v} == $params_size;
-            @selected_data = @{$v} unless $params_size;
+            @selected_data = @{$v} if ( $params_size and @{$v} == $params_size ) or not $params_size;
             last if scalar @selected_data > 0;
         }
     }
