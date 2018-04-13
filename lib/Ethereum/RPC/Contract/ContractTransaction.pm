@@ -49,7 +49,7 @@ sub call_transaction {
 
     my $future = Future->new;
     return $future->done(Ethereum::RPC::Contract::ContractResponse->new({ response => $res })) if $res and $res =~ /^0x/;
-    return $future->fail($res);
+    return $future->fail($res || "Can't call transaction");
 
 }
 
@@ -68,18 +68,19 @@ sub send_transaction {
     my $self = shift;
 
     my $future = Future->new;
-    return $future->fail("the transaction can't be sent without the GAS parameter") unless $self->gas;
 
-    my $res = $self->rpc_client->eth_sendTransaction([{
+    my $params = {
         to          => $self->contract_address,
         from        => $self->from,
-        gas         => Ethereum::RPC::Contract::Helper::UnitConversion::to_wei($self->gas),
         gasPrice    => $self->gas_price,
         data        => $self->data,
-    }]);
+    };
+
+    $params->{gas} = Ethereum::RPC::Contract::Helper::UnitConversion::to_wei($self->gas) if $self->gas;
+    my $res = $self->rpc_client->eth_sendTransaction([$params]);
 
     return $future->done(Ethereum::RPC::Contract::ContractResponse->new({ response => $res })) if $res and $res =~ /^0x/;
-    return $future->fail($res);
+    return $future->fail($res || "Can't send transaction");
 
 }
 

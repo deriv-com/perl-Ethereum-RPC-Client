@@ -37,7 +37,6 @@ sub AUTOLOAD {
         id      => $self->{id}++,
         method  => $method,
         params  => (ref $_[0] ? $_[0] : [@_]),
-        jsonrpc => "2.0"
     };
 
     my $res = $self->http_client->post($url => json => $obj)->result;
