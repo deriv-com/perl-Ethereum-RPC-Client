@@ -68,7 +68,7 @@ sub BUILD {
     my @decoded_json = @{decode_json($self->contract_abi)};
 
     for my $json_input (@decoded_json) {
-        if ( $json_input->{type} eq 'function' ) {
+        if ( grep {$_ eq $json_input->{type}} qw/function event/ ) {
             $self->contract_decoded->{$json_input->{name}} ||= [];
             push(@{$self->contract_decoded->{$json_input->{name}}}, $json_input->{inputs}) if scalar @{$json_input->{inputs}} > 0;
         }
