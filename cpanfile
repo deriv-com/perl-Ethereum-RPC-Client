@@ -1,10 +1,11 @@
+requires 'perl', '5.014';
 requires 'Moo';
 requires 'Mojo::UserAgent';
 requires 'Math::BigInt', '>= 1.999811';
 requires 'Math::BigFloat', '>= 1.999811';
-requires 'perl', '5.014';
-requires 'JSON', '2.97001';
 requires 'JSON::MaybeXS', '>= 1.003008';
+requires 'List::Util', '1.23';
+requires 'Scalar::Util', '1.23';
 requires 'Future', '>= 0.37';
 
 on configure => sub {

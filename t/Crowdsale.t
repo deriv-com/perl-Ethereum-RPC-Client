@@ -5,7 +5,7 @@ use Ethereum::RPC::Client;
 use Ethereum::RPC::Contract::Helper::ImportHelper;
 use Ethereum::RPC::Contract::Helper::UnitConversion;
 use Math::BigInt;
-use JSON;
+use JSON::MaybeXS;
 
 my $rpc_client = Ethereum::RPC::Client->new;
 
