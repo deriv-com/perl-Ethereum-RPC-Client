@@ -63,22 +63,24 @@ has contract_decoded => (
 
 =head2 BUILD
 
-Constructor: Here we get all functions and events from the given ABI and set 
+Constructor: Here we get all functions and events from the given ABI and set
 it to the contract class.
 
 =over 4
 
-=item contract_address => string
+=item contract_address => string (optional)
 
-=item * contract_abi => string (https://solidity.readthedocs.io/en/develop/abi-spec.html)
+=item contract_abi => string (required, https://solidity.readthedocs.io/en/develop/abi-spec.html)
 
-=item rpc_client => L<Ethereum::RPC::Client> (default: L<Ethereum::RPC::Client>)
+=item rpc_client => L<Ethereum::RPC::Client> (optional, default: L<Ethereum::RPC::Client>)
 
-=item from => string 
+=item from => string (optional)
 
-=item gas => numeric
+=item gas => numeric (optional)
 
-=item gas_price => numeric
+=item gas_price => numeric (optional)
+
+=back
 
 =cut
 
@@ -108,9 +110,9 @@ Prepare a function to be called/sent to a contract.
 
 =over 4
 
-=item * name => string
+=item name => string (required)
 
-=item params => array (the function params)
+=item params => array (optional, the function params)
 
 =back
 
@@ -134,9 +136,9 @@ The function ID is derived from the function signature using: SHA3(approve(addre
 
 =over 4
 
-=item * fuction_name => string
+=item fuction_name => string (required)
 
-=item * params_size => numeric (size of inputs called by the function)
+=item params_size => numeric (required, size of inputs called by the function)
 
 =back
 
@@ -166,9 +168,9 @@ Join the data and parameters and return a prepared transaction to be called as s
 
 =over 4
 
-=item * compiled_data => string (function signature or the contract bytecode)
+=item compiled_data => string (required, function signature or the contract bytecode)
 
-=item * params => array
+=item params => array (required)
 
 =back
 
@@ -203,9 +205,9 @@ https://solidity.readthedocs.io/en/develop/abi-spec.html#function-selector-and-a
 
 =over 4
 
-=item * params => array
+=item params => array (required)
 
-=back 
+=back
 
 Returns a string containing the ABI format to be send to the contract.
 
@@ -248,11 +250,11 @@ Read the specified log from the specified block to the latest block
 
 =over 4
 
-=item from_block => numeric
+=item from_block => numeric (optional)
 
-=item * event => string
+=item event => string (required)
 
-=item * event_params_size => numeric
+=item event_params_size => numeric (required)
 
 =back
 
@@ -281,9 +283,9 @@ Prepare a deploy transaction.
 
 =over 4
 
-=item * compiled (contract bytecode)
+=item compiled (required, contract bytecode)
 
-=item * params (constructor params)
+=item params (required, constructor params)
 
 =back
 
