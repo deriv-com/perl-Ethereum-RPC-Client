@@ -27,7 +27,7 @@ my $res = $rpc_client->eth_sendTransaction([{
     from        => $coinbase,
 }]);
 
-sleep 2;
+sleep 5;
 
 my $block = $rpc_client->eth_getBlockByNumber('latest', JSON->true);
 ok $block;
