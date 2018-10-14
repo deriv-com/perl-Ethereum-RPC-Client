@@ -3,7 +3,6 @@ package Ethereum::RPC::Contract;
 
 use strict;
 use warnings;
-no indirect;
 
 our $VERSION = '0.001';
 
@@ -159,7 +158,6 @@ sub get_function_id {
     my $sha3_hex_function = $self->rpc_client->web3_sha3($hex_function);
 
     return $sha3_hex_function;
-
 }
 
 =head2 _prepare_transaction
