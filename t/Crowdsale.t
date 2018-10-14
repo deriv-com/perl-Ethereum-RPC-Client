@@ -22,13 +22,6 @@ my $contract = $rpc_client->contract({
     gas             => 4000000
 });
 
-my $res = $rpc_client->eth_sendTransaction([{
-    to          => $coinbase,
-    from        => $coinbase,
-}]);
-
-sleep 5;
-
 my $block = $rpc_client->eth_getBlockByNumber('latest', JSON->true);
 ok $block;
 
