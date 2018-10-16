@@ -86,7 +86,7 @@ it to the contract class.
 
 sub BUILD {
     my ($self) = @_;
-    my @decoded_json = decode_json( $self->contract_abi // "[]" );
+    my @decoded_json = @{decode_json( $self->contract_abi // "[]" )};
 
     for my $json_input (@decoded_json) {
         if ( $json_input->{type} =~ /^function|event$/ ) {
