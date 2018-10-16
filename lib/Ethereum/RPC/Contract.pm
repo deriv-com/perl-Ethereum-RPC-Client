@@ -86,9 +86,7 @@ it to the contract class.
 
 sub BUILD {
     my ($self) = @_;
-
-    my $json = $self->contract_abi ? decode_json($self->contract_abi) : undef;
-    my @decoded_json = ref $json eq 'ARRAY' ? @$json : [];
+    my @decoded_json = decode_json( $self->contract_abi // "[]" );
 
     for my $json_input (@decoded_json) {
         if ( $json_input->{type} =~ /^function|event$/ ) {
@@ -227,17 +225,17 @@ sub get_hex_param {
         if ($param =~ /^0x[0-9A-F]+$/i) {
             push(@static, sprintf("%064s", substr($param, 2)));
         } elsif (looks_like_number($param)) {
-            push(@static, sprintf("%064s", substr(Math::BigInt->new($param)->as_hex, 2)));
+            push(@static, sprintf("%064s", Math::BigInt->new($param)->to_hex));
         } else {
             push(@offset_indices, scalar @dynamic);
             my $hex_value = unpack("H*", $param);
-            push(@dynamic, sprintf("%064s", substr(Math::BigInt->new(length($param))->as_hex, 2)));
+            push(@dynamic, sprintf("%064s", Math::BigInt->new(length($param))->to_hex));
             push(@dynamic, $hex_value . "0" x (64 - length($hex_value)));
         }
     }
 
     my $offset_count = scalar @offset_indices + scalar @static;
-    my @offset = map { sprintf("%064s", substr(Math::BigInt->new(($offset_count + $_) * 32)->as_hex, 2)) } @offset_indices;
+    my @offset = map { sprintf("%064s", Math::BigInt->new(($offset_count + $_) * 32)->to_hex) } @offset_indices;
 
     my $hex_response = join("", @offset, @static, @dynamic);
     return $hex_response;
