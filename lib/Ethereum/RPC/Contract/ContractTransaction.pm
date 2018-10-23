@@ -40,12 +40,12 @@ Return:
 =cut
 
 sub call_transaction {
-    my $self = shift;
+    my ($self, $block) = @_;
 
     my $res = $self->rpc_client->eth_call([{
         to    => $self->contract_address,
         data  => $self->data,
-    }, "latest"]);
+    }, $block // "latest"]);
 
     my $future = Future->new;
     return $future->done(Ethereum::RPC::Contract::ContractResponse->new({ response => $res })) if $res and $res =~ /^0x/;
