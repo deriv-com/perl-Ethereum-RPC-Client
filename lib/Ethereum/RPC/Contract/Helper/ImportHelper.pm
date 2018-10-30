@@ -5,7 +5,7 @@ use warnings;
 
 use Path::Tiny;
 
-our $VERSION = '0.001';
+our $VERSION = '0.03';
 
 =head1 NAME
 
@@ -30,11 +30,11 @@ Return:
 
 sub from_truffle_build {
     my $file = shift;
-    
+
     my $document = path($file)->slurp_utf8;
-    
+
     my $decoded_json = decode_json($document);
-    
+
     return { abi => encode_json($decoded_json->{abi}), bytecode => $decoded_json->{bytecode} };
 }
 
