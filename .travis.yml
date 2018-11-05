@@ -9,19 +9,11 @@ before_install:
    - git config --global user.name "TravisCI"
    - git config --global user.email $HOSTNAME":not-for-mail@travis-ci.org"
    - sudo apt-get update -qq
-   - sudo apt-get install software-properties-common supervisor -y -qq
-   - sudo add-apt-repository -y ppa:ethereum/ethereum
-   - sudo apt-get update -qq
-   - sudo apt-get install geth -y -qq
-   - sudo cp $TRAVIS_BUILD_DIR/config/geth.conf /etc/supervisor/conf.d/
-   - sudo supervisorctl reread
-   - sudo supervisorctl update
-   - sleep 10
-   - cat /var/log/supervisor/geth.err.log
-   - sh $TRAVIS_BUILD_DIR/config/geth_test.sh
+   - sudo apt-get install gcc wget software-properties-common build-essential -y -qq
 install:
    - cpanm --quiet --notest Dist::Zilla Dist::Zilla::App::Command::cover App::cpm Devel::Cover::Report::Codecov https://cpan.metacpan.org/authors/id/S/SR/SRI/Mojolicious-7.29.tar.gz https://cpan.metacpan.org/authors/id/B/BI/BINGOS/ExtUtils-MakeMaker-7.30.tar.gz
    - cpm install -w 2 --mirror=http://cpan.cpantesters.org/ -g $(dzil authordeps --missing)
    - cpm install -w 2 --mirror=http://cpan.cpantesters.org/ -g $(dzil listdeps --author --missing)
+   - . $TRAVIS_BUILD_DIR/config/geth_setup.sh
 script:
    - dzil smoke --release --author && dzil cover -test -report codecov && dzil xtest

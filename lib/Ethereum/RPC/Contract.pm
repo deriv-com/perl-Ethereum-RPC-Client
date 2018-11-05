@@ -15,57 +15,78 @@ our $VERSION = '0.03';
 use Moo;
 use JSON::MaybeXS;
 use Math::BigInt;
+use Scalar::Util qw(looks_like_number);
+use List::Util qw(first);
 
 use Ethereum::RPC::Client;
 use Ethereum::RPC::Contract::ContractResponse;
 use Ethereum::RPC::Contract::ContractTransaction;
 use Ethereum::RPC::Contract::Helper::UnitConversion;
 
-has contract_address => ( is => 'rw' );
-has contract_abi     => ( is => 'ro', required => 1 );
-has rpc_client       => ( is => 'ro', lazy => 1 );
+has contract_address => (is => 'rw');
+has contract_abi => (
+    is       => 'ro',
+    required => 1
+);
+has rpc_client => (
+    is => 'lazy',
+);
 
 sub _build_rpc_client {
     return Ethereum::RPC::Client->new;
 }
 
-has from             => ( is => 'rw', lazy => 1 );
+has from => (
+    is   => 'rw',
+    lazy => 1
+);
 
 sub _build_from {
     return shift->rpc_client->eth_coinbase();
 }
 
-has gas_price        => ( is => 'rw', lazy => 1 );
+has gas_price => (
+    is   => 'rw',
+    lazy => 1
+);
 
 sub _build_gas_price {
     return shift->rpc_client->eth_gasPrice();
 }
 
-has gas              => ( is => 'rw' );
+has gas => (is => 'rw');
 
-has contract_decoded => ( is => 'ro', default => sub{{}} );
+has contract_decoded => (
+    is      => 'rw',
+    default => sub{{}},
+);
 
 =head2 BUILD
 
-Constructor: Here we get all functions from the passed ABI and bring it to contract class subs.
+Constructor: Here we get all functions and events from the given ABI and set
+it to the contract class.
 
-Parameters:
-    contract_address    ( Optional - only if the contract already exists ),
-    contract_abi        ( Required - https://solidity.readthedocs.io/en/develop/abi-spec.html ),
-    rpc_client          ( Optional - Ethereum::RPC::Client(https://github.com/binary-com/perl-Ethereum-RPC-Client) - if not given, new instance will be created );
-    from                ( Optional - Address )
-    gas                 ( Optional - Integer gas )
-    gas_price           ( Optional - Integer gasPrice )
+=over 4
 
-Return:
-    New contract instance
+=item contract_address => string (optional)
+
+=item contract_abi => string (required, https://solidity.readthedocs.io/en/develop/abi-spec.html)
+
+=item rpc_client => L<Ethereum::RPC::Client> (optional, default: L<Ethereum::RPC::Client>)
+
+=item from => string (optional)
+
+=item gas => numeric (optional)
+
+=item gas_price => numeric (optional)
+
+=back
 
 =cut
 
 sub BUILD {
     my ($self) = @_;
-
-    my @decoded_json = @{decode_json($self->contract_abi)};
+    my @decoded_json = @{decode_json( $self->contract_abi // "[]" )};
 
     for my $json_input (@decoded_json) {
         if ( $json_input->{type} =~ /^function|event$/ ) {
@@ -74,7 +95,7 @@ sub BUILD {
         }
     }
 
-    $self->from($self->rpc_client->eth_coinbase()) unless $self->from;
+    $self->from($self->rpc_client->eth_coinbase())      unless $self->from;
     $self->gas_price($self->rpc_client->eth_gasPrice()) unless $self->gas_price;
 
     return;
@@ -83,14 +104,17 @@ sub BUILD {
 
 =head2 invoke
 
-Invokes all calls from ABI to the contract.
+Prepare a function to be called/sent to a contract.
 
-Parameters:
-    name (Required - the string function name )
-    params (Optional - the parameters)
+=over 4
 
-Return:
-    Ethereum::Contract::ContractTransaction
+=item name => string (required)
+
+=item params => array (optional, the function params)
+
+=back
+
+Returns a L<Ethereum::Contract::ContractTransaction> object.
 
 =cut
 
@@ -106,149 +130,164 @@ sub invoke {
 
 =head2 get_function_id
 
-Get the function and parameters and merge to create the hashed ethereum function ID
+The function ID is derived from the function signature using: SHA3(approve(address,uint256)).
 
-Ex: function approve with the inputs address _spender and uint value must be represented as:
-    SHA3("approve(address,uint)")
+=over 4
 
-Parameters:
-    function_string (Required - the string function name )
-    inputs (Required - the input list given on the contract ABI)
+=item fuction_name => string (required)
 
-Return:
-    New function ID hash
+=item params_size => numeric (required, size of inputs called by the function)
+
+=back
+
+Returns a string hash
 
 =cut
 
 sub get_function_id {
-    my ($self, $function_string, $params_size) = @_;
+    my ($self, $function_name, $params_size) = @_;
 
-    my @inputs = @{$self->contract_decoded->{$function_string}};
-    my @selected_data = ();
-    if (scalar @inputs > 0) {
-        for my $v (@inputs) {
-            @selected_data = @{$v} if ( $params_size and @{$v} == $params_size ) or not $params_size;
-            last if scalar @selected_data > 0;
-        }
-    }
+    my @inputs = @{$self->contract_decoded->{$function_name}};
 
-    $function_string .= "(";
-    $function_string .= $_->{type} ? "$_->{type}," : "" for @selected_data;
-    chop($function_string) if scalar @selected_data > 0;
-    $function_string .= ")";
+    my $selected_data = first { (not $_ and not $params_size) or ($params_size and scalar @{$_} == $params_size) } @inputs;
 
-    my $hex_function = $self->append_prefix(unpack("H*", $function_string));
+    $function_name .= sprintf("(%s)", join(",", map { $_->{type} } grep { $_->{type} } @$selected_data));
+
+    my $hex_function = $self->append_prefix(unpack("H*", $function_name));
 
     my $sha3_hex_function = $self->rpc_client->web3_sha3($hex_function);
 
     return $sha3_hex_function;
-
 }
 
 =head2 _prepare_transaction
 
 Join the data and parameters and return a prepared transaction to be called as send, call or deploy.
 
-Parameters:
-    $compiled_data  ( Required - the hashed function string name with parameters or the compiled contract bytecode )
-    params          ( Required - the parameters args given by the method call )
+=over 4
 
-Return:
-    Future object
-        on_done: Ethereum::Contract::ContractTransaction
-        on_fail: string message
+=item compiled_data => string (required, function signature or the contract bytecode)
+
+=item params => array (required)
+
+=back
+
+L<Future> object
+on_done: L<Ethereum::Contract::ContractTransaction>
+on_fail: error string
 
 =cut
 
 sub _prepare_transaction {
     my ($self, $compiled_data, $params) = @_;
 
-    my $data = join("", $compiled_data, map { $self->get_hex_param($_) } @{$params});
+    my $hex_params = $self->get_hex_param($params);
+
+    my $data = $compiled_data . $hex_params;
 
     return Ethereum::RPC::Contract::ContractTransaction->new(
-        contract_address=> $self->contract_address,
-        rpc_client      => $self->rpc_client,
-        data            => $self->append_prefix($data),
-        from            => $self->from,
-        gas             => $self->gas,
-        gas_price       => $self->gas_price,
+        contract_address => $self->contract_address,
+        rpc_client       => $self->rpc_client,
+        data             => $self->append_prefix($data),
+        from             => $self->from,
+        gas              => $self->gas,
+        gas_price        => $self->gas_price,
     );
 
 }
 
 =head2 get_hex_param
 
-Convert the given value to hexadecimal format
+Convert parameter list to the ABI format:
+https://solidity.readthedocs.io/en/develop/abi-spec.html#function-selector-and-argument-encoding
 
-Parameters:
-    function_id (Required - arg to be converted to hexadecimal)
+=over 4
 
-Return:
-    Hexadecimal string
+=item params => array (required)
+
+=back
+
+Returns a string containing the ABI format to be send to the contract.
 
 =cut
 
 sub get_hex_param {
-    my ($self, $param) = @_;
+    my ($self, $params) = @_;
 
-    my $new_param;
-    # Is hexadecimal string
-    if( $param =~ /^0x[0-9A-F]+$/i ) {
-        $new_param = sprintf( "%064s", substr($param, 2) );
-    # Is integer
-    } elsif ( $param =~ /^[+-]?[0-9?e+]+$/ ) {
-        $new_param = sprintf( "%064s", substr(Math::BigInt->new($param)->as_hex, 2) );
-    # Is string
-    } else {
-        $new_param = sprintf( "%064s", unpack("H*", $param) );
+    my @offset_indices;
+    my @static;
+    my @dynamic;
+
+    #TODO:
+    # - Arrays
+    # - Bytes
+    for my $param (@$params) {
+        if ($param =~ /^0x[0-9A-F]+$/i) {
+            push(@static, sprintf("%064s", substr($param, 2)));
+        } elsif (looks_like_number($param)) {
+            push(@static, sprintf("%064s", Math::BigInt->new($param)->to_hex));
+        } else {
+            push(@offset_indices, scalar @dynamic);
+            my $hex_value = unpack("H*", $param);
+            push(@dynamic, sprintf("%064s", Math::BigInt->new(length($param))->to_hex));
+            push(@dynamic, $hex_value . "0" x (64 - length($hex_value)));
+        }
     }
 
-    return $new_param;
+    my $offset_count = scalar @offset_indices + scalar @static;
+    my @offset = map { sprintf("%064s", Math::BigInt->new(($offset_count + $_) * 32)->to_hex) } @offset_indices;
+
+    my $hex_response = join("", @offset, @static, @dynamic);
+    return $hex_response;
 
 }
 
-=head2 read_all_events_from_block
+=head2 read_event
 
-Create a filter based on the given block to listen all events sent by the contract.
+Read the specified log from the specified block to the latest block
 
-The filter is killed before the list return, so for each request a new filter will be created.
+=over 4
 
-Parameters:
-    from_block ( Optional - start search block )
-    function     ( Required - function name )
+=item from_block => numeric (optional)
 
-Return:
-    https://github.com/ethereum/wiki/wiki/JSON-RPC#returns-42
+=item event => string (required)
+
+=item event_params_size => numeric (required)
+
+=back
+
+Returns a json encoded object: https://github.com/ethereum/wiki/wiki/JSON-RPC#returns-42
 
 =cut
 
-sub read_all_events_from_block {
-    my ($self, $from_block, $function) = @_;
+sub read_event {
+    my ($self, $from_block, $event, $event_params_size) = @_;
 
-    my $function_id = $self->get_function_id($function);
+    my $function_id = $self->get_function_id($event, $event_params_size);
 
-    $from_block = $self->append_prefix(unpack( "H*", $from_block // "latest" ));
+    $from_block = $self->append_prefix(unpack("H*", $from_block // "latest"));
 
     my $res = $self->rpc_client->eth_getLogs([{
-        address      => $self->contract_address,
-        fromBlock    => $from_block,
-        topics       => [$function_id]
-    }]);
+                address   => $self->contract_address,
+                fromBlock => $from_block,
+                topics    => [$function_id] }]);
 
     return $res;
-
 }
 
 =head2 invoke_deploy
 
-Prepare a deploy transaction,
+Prepare a deploy transaction.
 
-Parameters:
-    compiled ( Required - contract bytecode)
-    params   ( Required - contract constructor params
+=over 4
 
-Return:
-    Ethereum::Contract::ContractTransaction
+=item compiled (required, contract bytecode)
+
+=item params (required, constructor params)
+
+=back
+
+Returns a L<Ethereum::Contract::ContractTransaction> object.
 
 =cut
 
@@ -261,12 +300,19 @@ sub invoke_deploy {
 
 Ensure that the given hexadecimal string starts with 0x.
 
+=over 4
+
+=item str => string (hexadecimal)
+
+=back
+
+Returns a string hexadecimal
+
 =cut
 
 sub append_prefix {
     my ($self, $str) = @_;
-    return "0x$str" unless $str =~ /^0x/;
-    return $str;
+    return $str =~ /^0x/ ? $str : "0x$str";
 }
 
 1;

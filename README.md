@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/binary-com/perl-Ethereum-Contract.svg?branch=master)](https://travis-ci.org/binary-com/perl-Ethereum-Contract)
-[![codecov](https://codecov.io/gh/binary-com/perl-Ethereum-Contract/branch/master/graph/badge.svg)](https://codecov.io/gh/binary-com/perl-Ethereum-Contract)
+[![Build Status](https://travis-ci.org/binary-com/perl-Ethereum-RPC-Client.svg?branch=master)](https://travis-ci.org/binary-com/perl-Ethereum-RPC-Client)
+[![codecov](https://codecov.io/gh/binary-com/perl-Ethereum-RPC-Client/branch/master/graph/badge.svg)](https://codecov.io/gh/binary-com/perl-Ethereum-RPC-Client)
 
 # NAME
 
@@ -27,7 +27,7 @@ my $contract = $rpc_client->contract({
 my $message = $contract->deploy($bytecode)->get_contract_address(35);
 die $message->failure if $message->is_failed;
 
-$message = $contract->invoke("functionname", qw{param1 param2 param3})->call_transaction();
+$message = $contract->invoke("functionname", qw(param1 param2 param3))->call_transaction();
 print $message->get->to_big_int() unless $error;
 
 $message = $contract->invoke("functionname", $param1, $param2, $param3)->send_transaction();

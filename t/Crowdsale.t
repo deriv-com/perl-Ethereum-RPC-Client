@@ -16,27 +16,20 @@ my $truffle_project = Ethereum::RPC::Contract::Helper::ImportHelper::from_truffl
 die "can't read json" unless $truffle_project;
 
 my $contract = $rpc_client->contract({
-    contract_abi    => $truffle_project->{abi},
-    rpc_client      => $rpc_client,
-    from            => $coinbase,
-    gas             => 4000000
+    contract_abi => $truffle_project->{abi},
+    rpc_client   => $rpc_client,
+    from         => $coinbase,
+    gas          => 4000000
 });
-
-my $res = $rpc_client->eth_sendTransaction([{
-    to          => $coinbase,
-    from        => $coinbase,
-}]);
-
-sleep 2;
 
 my $block = $rpc_client->eth_getBlockByNumber('latest', JSON->true);
 ok $block;
 
-my $timestamp   = hex $block->{timestamp};
-my $start_time   = $timestamp + 86400;
-my $end_time     = $start_time + (86400 * 20);
-my $rate        = Math::BigInt->new(1000);
-my $wallet      = $coinbase;
+my $timestamp  = hex $block->{timestamp};
+my $start_time = $timestamp + 86400;
+my $end_time   = $start_time + (86400 * 20);
+my $rate       = Math::BigInt->new(1000);
+my $wallet     = $coinbase;
 
 my $response = $contract->invoke_deploy($truffle_project->{bytecode}, $start_time, $end_time, $rate, $wallet)->get_contract_address(35);
 ok !$response->is_failed;
@@ -44,7 +37,7 @@ ok !$response->is_failed;
 $contract->contract_address($response->get->response);
 $contract->gas(undef);
 
-my @account_list = @{$rpc_client->eth_accounts()};
+my @account_list = @{ $rpc_client->eth_accounts() };
 
 $response = $contract->invoke("startTime")->call_transaction();
 ok !$response->is_failed;
