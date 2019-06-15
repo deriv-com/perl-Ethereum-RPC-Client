@@ -7,6 +7,11 @@ use Ethereum::RPC::Contract::Helper::UnitConversion;
 use Math::BigInt;
 use JSON;
 
+BEGIN {
+    plan skip_all => 'Needs Travis setup'
+        unless $ENV{TRAVIS};
+}
+
 my $rpc_client = Ethereum::RPC::Client->new;
 
 my $coinbase = $rpc_client->eth_coinbase;
