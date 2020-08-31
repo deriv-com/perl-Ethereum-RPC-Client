@@ -38,13 +38,14 @@ sub AUTOLOAD {
         method => $method,
         params => (ref $_[0] ? $_[0] : [@_]),
     };
-
+    
+    # dies on connection problems
     my $res = $self->http_client->post($url => json => $obj)->result;
 
-    return $res->json->{result} unless $res->is_error;
-    return $res->message if $res;
-    return undef;
-
+    if ($res->is_error) {
+        die sprintf("error code: %d, error message: %s (%s)\n", $res->code, $res->message, $method);
+    }
+    return $res->json->{result};
 }
 
 =head2 contract
