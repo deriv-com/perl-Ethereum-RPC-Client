@@ -42,11 +42,11 @@ sub AUTOLOAD {
     # dies on connection problems
     my $res = $self->http_client->post($url => json => $obj)->result;
 
-    if ($res->is_error) {
-        # https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
-        # the received response C<$res> contains C<code> and C<message>
-        die sprintf("error code: %d, error message: %s (%s)\n", $res->code, $res->message, $method);
-    }
+    # https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
+    # the received response C<$res> contains C<code> and C<message>
+    die sprintf("error code: %d, error message: %s (%s)\n", $res->code, $res->message, $method)
+        if ($res->is_error);
+
     return $res->json->{result};
 }
 
