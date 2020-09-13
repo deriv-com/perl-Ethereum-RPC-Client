@@ -39,7 +39,7 @@ sub AUTOLOAD {
         params => (ref $_[0] ? $_[0] : [@_]),
     };
     
-    # dies on connection problems
+    # Will issue 'die' itself on connection problems
     my $res = $self->http_client->post($url => json => $obj)->result;
 
     # https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
