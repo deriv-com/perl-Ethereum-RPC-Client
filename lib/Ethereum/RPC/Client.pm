@@ -41,8 +41,8 @@ sub AUTOLOAD {
 
     my $res = $self->http_client->post($url => json => $obj)->result;
 
-    return $res->json->{result} unless $res->is_error;
-    return $res->message if $res;
+    return $res->json->{result} if $res->json->{result};
+    return $res->json->{error}->{message} if $res->json->{error}->{message};
     return undef;
 
 }
