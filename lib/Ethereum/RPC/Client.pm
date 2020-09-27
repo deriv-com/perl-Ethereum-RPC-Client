@@ -44,8 +44,8 @@ sub AUTOLOAD {
 
     # https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
     # the received response C<$res> contains C<code> and C<message>
-    die sprintf("error code: %d, error message: %s (%s)\n", $res->code, $res->message, $method)
-        if ($res->is_error);
+    die sprintf("error code: %d, error message: %s (%s)\n", $res->json->{error}->{code}, $res->json->{error}->{message}, $method)
+        if ($res->json->{error}->{message});
 
     return $res->json->{result};
 }
