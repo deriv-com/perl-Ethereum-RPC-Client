@@ -41,10 +41,10 @@ sub AUTOLOAD {
 
     my $res = $self->http_client->post($url => json => $obj)->result;
 
-    return $res->json->{result} unless $res->is_error;
-    return $res->message if $res;
-    return undef;
-
+    # https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
+    die sprintf("error code: %d, error message: %s (%s)\n", $res->json->{error}->{code}, $res->json->{error}->{message}, $method)
+        if ($res->json->{error}->{message});
+    return $res->json->{result};
 }
 
 =head2 contract
