@@ -43,10 +43,8 @@ sub AUTOLOAD {
     my $res = $self->http_client->post($url => json => $obj)->result;
 
     # https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
-    # the received response C<$res> contains C<code> and C<message>
     die sprintf("error code: %d, error message: %s (%s)\n", $res->json->{error}->{code}, $res->json->{error}->{message}, $method)
         if ($res->json->{error}->{message});
-
     return $res->json->{result};
 }
 
