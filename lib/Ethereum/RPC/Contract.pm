@@ -123,7 +123,7 @@ sub invoke {
 
     my $function_id = substr($self->get_function_id($name, scalar @params), 0, 10);
 
-    my $res = $self->_prepare_transaction($function_id, \@params);
+    my $res = $self->_prepare_transaction($function_id, $name, \@params);
 
     return $res;
 }
@@ -179,9 +179,9 @@ on_fail: error string
 =cut
 
 sub _prepare_transaction {
-    my ($self, $compiled_data, $params) = @_;
+    my ($self, $compiled_data, $function_name, $params) = @_;
 
-    my $hex_params = $self->get_hex_param($params);
+    my $hex_params = $self->get_hex_param($function_name, $params);
 
     my $data = $compiled_data . $hex_params;
 
@@ -212,33 +212,46 @@ Returns a string containing the ABI format to be send to the contract.
 =cut
 
 sub get_hex_param {
-    my ($self, $params) = @_;
+    my ($self, $current_offset_count, $input_type, $param) = @_;
 
-    my @offset_indices;
     my @static;
     my @dynamic;
 
-    #TODO:
-    # - Arrays
-    # - Bytes
-    for my $param (@$params) {
-        if ($param =~ /^0x[0-9A-F]+$/i) {
-            push(@static, sprintf("%064s", substr($param, 2)));
-        } elsif (looks_like_number($param)) {
-            push(@static, sprintf("%064s", Math::BigInt->new($param)->to_hex));
-        } else {
-            push(@offset_indices, scalar @dynamic);
-            my $hex_value = unpack("H*", $param);
-            push(@dynamic, sprintf("%064s", Math::BigInt->new(length($param))->to_hex));
-            push(@dynamic, $hex_value . "0" x (64 - length($hex_value)));
+    if ($input_type eq 'address' && $param =~ /^0x[0-9A-F]+$/i) {
+        push(@static, sprintf("%064s", substr($param, 2)));
+    } elsif ($input_type =~ /^(u)?(int|bool)(\d+)?/ && looks_like_number($param)) {
+        push(@static, sprintf("%064s", Math::BigInt->new($param)->to_hex));
+    } elsif ($input_type =~ /^bytes\d+/){
+        my $hex_value = unpack("H*", $param);
+        push(@static, $hex_value . "0" x (64 - length($hex_value)));
+    } elsif ($input_type =~ /^(string|bytes)$/){
+        my $hex_value = unpack("H*", $param);
+        push(@static, sprintf("%064s", Math::BigInt->new($current_offset_count * 32)->to_hex));
+        push(@dynamic, sprintf("%064s", sprintf("%x", length($param))));
+        push(@dynamic, $hex_value . "0" x (64 - length($hex_value)));
+    } elsif ($input_type =~ /\[(\d+)?\]/){
+        my $size = $param->@*;
+        unless ($1) {
+            push(@static, sprintf("%064s", Math::BigInt->new($current_offset_count * 32)->to_hex));
+            push(@dynamic, sprintf("%064s", Math::BigInt->new($size)->to_hex));
         }
+
+        my @internal_static;
+        my @internal_dynamic;
+
+        $input_type =~ /^([a-z]+)\[(?:\d+)?\]/;
+        for my $item ($param->@*) {
+            my ($internal_static, $internal_dynamic) = $self->get_hex_param($size, $1, $item);
+            push(@internal_static, $internal_static->@*);
+            push(@internal_dynamic, $internal_dynamic->@*);
+            $size += $internal_dynamic->@*;
+        }
+
+        push(@dynamic, @internal_static);
+        push(@dynamic, @internal_dynamic);
     }
 
-    my $offset_count = scalar @offset_indices + scalar @static;
-    my @offset = map { sprintf("%064s", Math::BigInt->new(($offset_count + $_) * 32)->to_hex) } @offset_indices;
-
-    my $hex_response = join("", @offset, @static, @dynamic);
-    return $hex_response;
+    return \@static, \@dynamic;
 
 }
 
@@ -293,7 +306,7 @@ Returns a L<Ethereum::Contract::ContractTransaction> object.
 
 sub invoke_deploy {
     my ($self, $compiled_data, @params) = @_;
-    return $self->_prepare_transaction($compiled_data, \@params);
+    return $self->_prepare_transaction($compiled_data, undef, \@params);
 }
 
 =head2 append_prefix
