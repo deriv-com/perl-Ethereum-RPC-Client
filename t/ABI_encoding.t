@@ -51,9 +51,32 @@ my $contract = $rpc_client->contract({
     gas_price       => 10
 });
 
-my @params = ('0xd1aa52637fdc1d2b7f0c8b33c0fc954ef3e71f72', 10, 'abracadabra', [1,1]);
+use Tie::IxHash;
+tie my %params, "Tie::IxHash";
+
+%params = (
+    address => '0xd1aa52637fdc1d2b7f0c8b33c0fc954ef3e71f72',
+    string => 'abracadabra',
+    'string[]' => ["abra", "cadabra"],
+    'string[4]' => ["ab", "ra", "cada", "bra"],
+    'bytes10[2]' => ["1234567890", "1234567890"],
+    'bytes[]' => ["17", "17"],
+);
+
+my $offset = scalar (keys %params);
+my (@static, @dynamic);
+for my $param (keys %params){
+    my ($static, $dynamic) = $contract->get_hex_param($offset, $param, $params{$param});
+    push(@static, $static->@*);
+    push(@dynamic, $dynamic->@*);
+    $offset += scalar $dynamic->@*;
+}
+
 use Data::Dumper;
-print Dumper $contract->get_hex_param(6, 'bytes[]', ["1", "1"]);
+my @data = (@static, @dynamic);
+my $data = join("", @data);
+
+print Dumper $data;
 
 done_testing;
 

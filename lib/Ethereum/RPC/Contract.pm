@@ -217,7 +217,39 @@ sub get_hex_param {
     my @static;
     my @dynamic;
 
-    if ($input_type eq 'address' && $param =~ /^0x[0-9A-F]+$/i) {
+    if ($input_type =~ /(\d+)?\[(\d+)?\]/){
+        my $size = $param->@*;
+        my $static_item_size = $1;
+        my $static_array_size = $2;
+
+        unless ($static_array_size && $static_item_size){
+            push(@static, sprintf("%064s", Math::BigInt->new($current_offset_count * 32)->to_hex));
+        }
+
+        unless ($static_array_size) {
+            push(@dynamic, sprintf("%064s", Math::BigInt->new($size)->to_hex));
+        }
+
+        my @internal_static;
+        my @internal_dynamic;
+
+        $input_type =~ /^([a-z]+([0-9]+)?)\[(?:\d+)?\]/;
+        for my $item ($param->@*) {
+            my ($internal_static, $internal_dynamic) = $self->get_hex_param($size, $1, $item);
+            push(@internal_static, $internal_static->@*);
+            push(@internal_dynamic, $internal_dynamic->@*);
+            $size += $internal_dynamic->@*;
+        }
+
+
+        if($static_item_size && $static_array_size){
+            push(@static, @internal_static);
+        }else{
+            push(@dynamic, @internal_static);
+        }
+        push(@dynamic, @internal_dynamic);
+
+    } elsif ($input_type eq 'address' && $param =~ /^0x[0-9A-F]+$/i) {
         push(@static, sprintf("%064s", substr($param, 2)));
     } elsif ($input_type =~ /^(u)?(int|bool)(\d+)?/ && looks_like_number($param)) {
         push(@static, sprintf("%064s", Math::BigInt->new($param)->to_hex));
@@ -229,26 +261,6 @@ sub get_hex_param {
         push(@static, sprintf("%064s", Math::BigInt->new($current_offset_count * 32)->to_hex));
         push(@dynamic, sprintf("%064s", sprintf("%x", length($param))));
         push(@dynamic, $hex_value . "0" x (64 - length($hex_value)));
-    } elsif ($input_type =~ /\[(\d+)?\]/){
-        my $size = $param->@*;
-        unless ($1) {
-            push(@static, sprintf("%064s", Math::BigInt->new($current_offset_count * 32)->to_hex));
-            push(@dynamic, sprintf("%064s", Math::BigInt->new($size)->to_hex));
-        }
-
-        my @internal_static;
-        my @internal_dynamic;
-
-        $input_type =~ /^([a-z]+)\[(?:\d+)?\]/;
-        for my $item ($param->@*) {
-            my ($internal_static, $internal_dynamic) = $self->get_hex_param($size, $1, $item);
-            push(@internal_static, $internal_static->@*);
-            push(@internal_dynamic, $internal_dynamic->@*);
-            $size += $internal_dynamic->@*;
-        }
-
-        push(@dynamic, @internal_static);
-        push(@dynamic, @internal_dynamic);
     }
 
     return \@static, \@dynamic;
