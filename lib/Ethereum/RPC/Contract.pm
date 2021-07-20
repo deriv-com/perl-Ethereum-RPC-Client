@@ -179,6 +179,7 @@ on_fail: error string
 
 sub _prepare_transaction {
     my ($self, $compiled_data, $function_name, $params) = @_;
+    $compiled_data =~ s/\s+//g;
 
     my $encoded = $self->encode($function_name, $params);
 
@@ -212,7 +213,7 @@ Returns an encoded data string
 =cut
 
 sub encode {
-    my ($self, $function_name, @params) = @_;
+    my ($self, $function_name, $params) = @_;
 
     my $inputs = $self->contract_decoded->{$function_name}->[0];
     my $offset = $self->get_function_offset($inputs);
@@ -220,7 +221,7 @@ sub encode {
     my (@static, @dynamic);
     my @inputs = $inputs->@*;
     for (my $input_index = 0; $input_index < scalar @inputs; $input_index++) {
-        my ($static, $dynamic) = $self->get_hex_param($offset, $inputs[$input_index]->{type}, $params[$input_index]);
+        my ($static, $dynamic) = $self->get_hex_param($offset, $inputs[$input_index]->{type}, $params->[$input_index]);
         push(@static,  $static->@*);
         push(@dynamic, $dynamic->@*);
         $offset += scalar $dynamic->@*;
@@ -424,7 +425,6 @@ Returns a L<Ethereum::Contract::ContractTransaction> object.
 
 sub invoke_deploy {
     my ($self, $compiled_data, @params) = @_;
-    $compiled_data =~ s/^\s+|\s+$//g;
     return $self->_prepare_transaction($compiled_data, "constructor", \@params);
 }
 
