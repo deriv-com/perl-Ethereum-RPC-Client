@@ -16,7 +16,7 @@ my $rpc_client = Ethereum::RPC::Client->new;
 
 my $coinbase = $rpc_client->eth_coinbase;
 
-my $truffle_project = Ethereum::RPC::Contract::Helper::ImportHelper::from_truffle_build("./t/builds/SimpleToken.json");
+my $truffle_project = Ethereum::RPC::Contract::Helper::ImportHelper::from_truffle_build("./t/resources/SimpleToken.json");
 
 die "can't read json" unless $truffle_project;
 

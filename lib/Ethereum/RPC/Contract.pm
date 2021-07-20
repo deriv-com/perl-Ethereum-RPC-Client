@@ -89,9 +89,8 @@ sub BUILD {
     my @decoded_json = @{decode_json($self->contract_abi // "[]")};
 
     for my $json_input (@decoded_json) {
-        if ($json_input->{type} =~ /^function|event$/) {
-            $self->contract_decoded->{$json_input->{name}} ||= [];
-            push(@{$self->contract_decoded->{$json_input->{name}}}, $json_input->{inputs}) if scalar @{$json_input->{inputs}} > 0;
+        if ($json_input->{type} =~ /^function|event|constructor$/) {
+            push(@{$self->contract_decoded->{$json_input->{name} // $json_input->{type}}}, $json_input->{inputs}) if scalar @{$json_input->{inputs}} > 0;
         }
     }
 
@@ -425,7 +424,8 @@ Returns a L<Ethereum::Contract::ContractTransaction> object.
 
 sub invoke_deploy {
     my ($self, $compiled_data, @params) = @_;
-    return $self->_prepare_transaction($compiled_data, undef, \@params);
+    $compiled_data =~ s/^\s+|\s+$//g;
+    return $self->_prepare_transaction($compiled_data, "constructor", \@params);
 }
 
 =head2 append_prefix
