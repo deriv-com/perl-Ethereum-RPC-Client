@@ -352,9 +352,7 @@ sub get_hex_param {
         if ($param =~ /^(?:0x|0X)([a-fA-F0-9]+)$/) {
             # hex without 0x
             $hex_value = $1;
-            # for the byte array each item
-            # has the size of 1
-            $size = 1;
+            $size = length(pack("H*", $hex_value));
         } else {
             $hex_value = unpack("H*", $param);
             $size      = length($param);
