@@ -216,6 +216,9 @@ sub encode {
     my ($self, $function_name, $params) = @_;
 
     my $inputs = $self->contract_decoded->{$function_name}->[0];
+
+    # no inputs
+    return "" unless $inputs;
     my $offset = $self->get_function_offset($inputs);
 
     my (@static, @dynamic);
