@@ -94,6 +94,10 @@ sub BUILD {
         }
     }
 
+    unless ($self->contract_decoded->{constructor}) {
+        push(@{$self->contract_decoded->{constructor}}, []);
+    }
+
     $self->from($self->rpc_client->eth_coinbase())      unless $self->from;
     $self->gas_price($self->rpc_client->eth_gasPrice()) unless $self->gas_price;
 
@@ -219,6 +223,7 @@ sub encode {
 
     # no inputs
     return "" unless $inputs;
+
     my $offset = $self->get_function_offset($inputs);
 
     my (@static, @dynamic);
