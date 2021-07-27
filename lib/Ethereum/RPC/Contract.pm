@@ -171,6 +171,8 @@ Join the data and parameters and return a prepared transaction to be called as s
 
 =item compiled_data => string (required, function signature or the contract bytecode)
 
+=item function_name => string (contract function as specified in the ABI)
+
 =item params => array (required)
 
 =back
