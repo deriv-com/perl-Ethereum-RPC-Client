@@ -24,7 +24,7 @@ use Ethereum::RPC::Contract::ContractTransaction;
 use Ethereum::RPC::Contract::Helper::UnitConversion;
 
 has contract_address => (is => 'rw');
-has contract_abi => (
+has contract_abi     => (
     is       => 'ro',
     required => 1
 );
@@ -45,20 +45,17 @@ sub _build_from {
     return shift->rpc_client->eth_coinbase();
 }
 
-has gas_price => (
-    is   => 'rw',
-    lazy => 1
-);
-
-sub _build_gas_price {
-    return shift->rpc_client->eth_gasPrice();
-}
+has gas_price => (is => 'rw');
 
 has gas => (is => 'rw');
 
+has max_fee_per_gas => (is => 'rw');
+
+has max_priority_fee_per_gas => (is => 'rw');
+
 has contract_decoded => (
     is      => 'rw',
-    default => sub{{}},
+    default => sub { {} },
 );
 
 =head2 BUILD
@@ -80,26 +77,26 @@ it to the contract class.
 
 =item gas_price => numeric (optional)
 
+=item max_fee_per_gas => numeric (optional)
+
+=item max_priority_fee_per_gas => numeric (optional)
+
 =back
 
 =cut
 
 sub BUILD {
     my ($self) = @_;
-    my @decoded_json = @{decode_json( $self->contract_abi // "[]" )};
+    my @decoded_json = @{decode_json($self->contract_abi // "[]")};
 
     for my $json_input (@decoded_json) {
-        if ( $json_input->{type} =~ /^function|event$/ ) {
+        if ($json_input->{type} =~ /^function|event$/) {
             $self->contract_decoded->{$json_input->{name}} ||= [];
             push(@{$self->contract_decoded->{$json_input->{name}}}, $json_input->{inputs}) if scalar @{$json_input->{inputs}} > 0;
         }
     }
 
-    $self->from($self->rpc_client->eth_coinbase())      unless $self->from;
-    $self->gas_price($self->rpc_client->eth_gasPrice()) unless $self->gas_price;
-
     return;
-
 }
 
 =head2 invoke
@@ -185,15 +182,18 @@ sub _prepare_transaction {
 
     my $data = $compiled_data . $hex_params;
 
-    return Ethereum::RPC::Contract::ContractTransaction->new(
+    my $transaction = Ethereum::RPC::Contract::ContractTransaction->new(
         contract_address => $self->contract_address,
         rpc_client       => $self->rpc_client,
         data             => $self->append_prefix($data),
         from             => $self->from,
         gas              => $self->gas,
-        gas_price        => $self->gas_price,
     );
 
+    $transaction->{gas_price}                = $self->gas_price                if $self->gas_price;
+    $transaction->{max_fee_per_gas}          = $self->max_fee_per_gas          if $self->max_fee_per_gas;
+    $transaction->{max_priority_fee_per_gas} = $self->max_priority_fee_per_gas if $self->max_priority_fee_per_gas;
+    return $transaction;
 }
 
 =head2 get_hex_param
@@ -235,7 +235,7 @@ sub get_hex_param {
     }
 
     my $offset_count = scalar @offset_indices + scalar @static;
-    my @offset = map { sprintf("%064s", Math::BigInt->new(($offset_count + $_) * 32)->to_hex) } @offset_indices;
+    my @offset       = map { sprintf("%064s", Math::BigInt->new(($offset_count + $_) * 32)->to_hex) } @offset_indices;
 
     my $hex_response = join("", @offset, @static, @dynamic);
     return $hex_response;
@@ -270,7 +270,7 @@ sub read_event {
     my $res = $self->rpc_client->eth_getLogs([{
                 address   => $self->contract_address,
                 fromBlock => $from_block,
-                topics    => [$function_id] }]);
+                topics    => [$function_id]}]);
 
     return $res;
 }
