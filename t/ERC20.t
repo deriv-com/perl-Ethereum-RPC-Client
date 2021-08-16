@@ -16,14 +16,14 @@ my $rpc_client = Ethereum::RPC::Client->new;
 
 my $coinbase = $rpc_client->eth_coinbase;
 
-my $truffle_project = Ethereum::RPC::Contract::Helper::ImportHelper::from_truffle_build("./t/builds/SimpleToken.json");
+my $truffle_project = Ethereum::RPC::Contract::Helper::ImportHelper::from_truffle_build("./t/resources/SimpleToken.json");
 
 die "can't read json" unless $truffle_project;
 
 my $contract = $rpc_client->contract({
-    contract_abi    => $truffle_project->{abi},
-    from            => $coinbase,
-    gas             => 4000000,
+    contract_abi => $truffle_project->{abi},
+    from         => $coinbase,
+    gas          => 4000000,
 });
 
 my $response = $contract->invoke_deploy($truffle_project->{bytecode})->get_contract_address(35);

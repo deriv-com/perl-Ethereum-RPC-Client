@@ -16,7 +16,7 @@ my $rpc_client = Ethereum::RPC::Client->new;
 
 my $coinbase = $rpc_client->eth_coinbase;
 
-my $truffle_project = Ethereum::RPC::Contract::Helper::ImportHelper::from_truffle_build("./t/builds/SimpleCrowdsale.json");
+my $truffle_project = Ethereum::RPC::Contract::Helper::ImportHelper::from_truffle_build("./t/resources/SimpleCrowdsale.json");
 
 die "can't read json" unless $truffle_project;
 
@@ -42,7 +42,7 @@ ok !$response->is_failed;
 $contract->contract_address($response->get->response);
 $contract->gas(undef);
 
-my @account_list = @{ $rpc_client->eth_accounts() };
+my @account_list = @{$rpc_client->eth_accounts()};
 
 $response = $contract->invoke("startTime")->call_transaction();
 ok !$response->is_failed;
