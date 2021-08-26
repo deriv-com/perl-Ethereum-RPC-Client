@@ -378,15 +378,7 @@ sub get_hex_param {
         }
     }
 
-<<<<<<< HEAD
-    my $offset_count = scalar @offset_indices + scalar @static;
-    my @offset       = map { sprintf("%064s", Math::BigInt->new(($offset_count + $_) * 32)->to_hex) } @offset_indices;
-
-    my $hex_response = join("", @offset, @static, @dynamic);
-    return $hex_response;
-=======
     return \@static, \@dynamic;
->>>>>>> f6df1b7a10d085c8e142d4b1dd736e78ff989680
 
 }
 
