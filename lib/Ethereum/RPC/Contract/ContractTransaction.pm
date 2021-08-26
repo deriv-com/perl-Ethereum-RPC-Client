@@ -31,6 +31,7 @@ has data => (
     is       => 'ro',
     required => 1
 );
+
 has from                     => (is => 'ro');
 has gas                      => (is => 'ro');
 has gas_price                => (is => 'ro');
@@ -79,9 +80,9 @@ sub send_transaction {
     my $future = Future->new;
 
     my $params = {
-        to   => $self->contract_address,
-        from => $self->from,
-        data => $self->data,
+        to       => $self->contract_address,
+        from     => $self->from,
+        data     => $self->data,
     };
 
     $params->{gas}                  = Ethereum::RPC::Contract::Helper::UnitConversion::to_wei($self->gas) if $self->gas;
