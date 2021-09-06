@@ -231,6 +231,9 @@ sub encode {
     my (@static, @dynamic);
     my @inputs = $inputs->@*;
     for (my $input_index = 0; $input_index < scalar @inputs; $input_index++) {
+
+        die sprintf("Invalid required parameters for function %s, required %d, have %d", $function_name, scalar @inputs, scalar $params->@*) unless $params->[$input_index];
+
         my ($static, $dynamic) = $self->get_hex_param($offset, $inputs[$input_index]->{type}, $params->[$input_index]);
         push(@static,  $static->@*);
         push(@dynamic, $dynamic->@*);
