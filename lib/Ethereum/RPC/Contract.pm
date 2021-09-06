@@ -91,7 +91,7 @@ sub BUILD {
 
     for my $json_input (@decoded_json) {
         if ($json_input->{type} =~ /^function|event|constructor$/) {
-            push(@{$self->contract_decoded->{$json_input->{name} // $json_input->{type}}}, $json_input->{inputs}) if scalar @{$json_input->{inputs}} > 0;
+            push(@{$self->contract_decoded->{$json_input->{name} // $json_input->{type}}}, $json_input->{inputs});
         }
     }
 
