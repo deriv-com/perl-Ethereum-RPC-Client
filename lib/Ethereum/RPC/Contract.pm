@@ -17,6 +17,7 @@ use JSON::MaybeXS;
 use Math::BigInt;
 use Scalar::Util qw(looks_like_number);
 use List::Util qw(first);
+use Digest::Keccak qw(keccak_256_hex);
 
 use Ethereum::RPC::Client;
 use Ethereum::RPC::Contract::ContractResponse;
@@ -161,9 +162,7 @@ sub get_function_id {
 
     $function_name .= sprintf("(%s)", join(",", map { $_->{type} } grep { $_->{type} } @$selected_data));
 
-    my $hex_function = $self->append_prefix(unpack("H*", $function_name));
-
-    my $sha3_hex_function = $self->rpc_client->web3_sha3($hex_function);
+    my $sha3_hex_function = '0x' . keccak_256_hex($function_name);
 
     return $sha3_hex_function;
 }
