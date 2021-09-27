@@ -196,7 +196,7 @@ sub _prepare_transaction {
 
     my $data = $compiled_data . $encoded;
 
-    my $transaction = return Ethereum::RPC::Contract::ContractTransaction->new(
+    my $transaction = Ethereum::RPC::Contract::ContractTransaction->new(
         contract_address => $self->contract_address,
         rpc_client       => $self->rpc_client,
         data             => $self->append_prefix($data),
