@@ -203,7 +203,13 @@ sub _prepare_transaction {
         gas              => $self->gas
     );
 
-    $transaction->{gas_price}                = $self->gas_price                if $self->gas_price;
+    if ($self->gas_price) {
+        $transaction->{gas_price} = $self->gas_price;
+        # if the gas price is set the transaction type is legacy
+        return $transaction;
+    }
+
+    # transaction type 2 EIP1559
     $transaction->{max_fee_per_gas}          = $self->max_fee_per_gas          if $self->max_fee_per_gas;
     $transaction->{max_priority_fee_per_gas} = $self->max_priority_fee_per_gas if $self->max_priority_fee_per_gas;
     return $transaction;
