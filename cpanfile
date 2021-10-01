@@ -8,6 +8,8 @@ requires 'JSON::MaybeXS', '>= 1.003008';
 requires 'List::Util';
 requires 'Scalar::Util';
 requires 'Future', '>= 0.37';
+requires 'Digest::Keccak', '>= 0.05';
+requires 'Path::Tiny';
 
 on configure => sub {
     requires 'ExtUtils::MakeMaker', '>= 7.1101';

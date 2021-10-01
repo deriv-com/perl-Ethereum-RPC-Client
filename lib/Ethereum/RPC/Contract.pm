@@ -17,6 +17,7 @@ use JSON::MaybeXS;
 use Math::BigInt;
 use Scalar::Util qw(looks_like_number);
 use List::Util qw(first);
+use Digest::Keccak qw(keccak_256_hex);
 
 use Ethereum::RPC::Client;
 use Ethereum::RPC::Contract::ContractResponse;
@@ -54,6 +55,10 @@ sub _build_gas_price {
     return shift->rpc_client->eth_gasPrice();
 }
 
+has max_fee_per_gas => (is => 'rw');
+
+has max_priority_fee_per_gas => (is => 'rw');
+
 has gas => (is => 'rw');
 
 has contract_decoded => (
@@ -80,26 +85,27 @@ it to the contract class.
 
 =item gas_price => numeric (optional)
 
+=item max_fee_per_gas => numeric (optional)
+
+=item max_priority_fee_per_gas => numeric (optional)
+
 =back
 
 =cut
 
 sub BUILD {
     my ($self) = @_;
-    my @decoded_json = @{decode_json($self->contract_abi // "[]")};
+    my @decoded_json = @{ decode_json($self->contract_abi // "[]") };
 
     for my $json_input (@decoded_json) {
         if ($json_input->{type} =~ /^function|event|constructor$/) {
-            push(@{$self->contract_decoded->{$json_input->{name} // $json_input->{type}}}, $json_input->{inputs}) if scalar @{$json_input->{inputs}} > 0;
+            push(@{ $self->contract_decoded->{ $json_input->{name} // $json_input->{type} } }, $json_input->{inputs});
         }
     }
 
     unless ($self->contract_decoded->{constructor}) {
-        push(@{$self->contract_decoded->{constructor}}, []);
+        push(@{ $self->contract_decoded->{constructor} }, []);
     }
-
-    $self->from($self->rpc_client->eth_coinbase())      unless $self->from;
-    $self->gas_price($self->rpc_client->eth_gasPrice()) unless $self->gas_price;
 
     return;
 
@@ -150,15 +156,13 @@ Returns a string hash
 sub get_function_id {
     my ($self, $function_name, $params_size) = @_;
 
-    my @inputs = @{$self->contract_decoded->{$function_name}};
+    my @inputs = @{ $self->contract_decoded->{$function_name} };
 
     my $selected_data = first { (not $_ and not $params_size) or ($params_size and scalar @{$_} == $params_size) } @inputs;
 
     $function_name .= sprintf("(%s)", join(",", map { $_->{type} } grep { $_->{type} } @$selected_data));
 
-    my $hex_function = $self->append_prefix(unpack("H*", $function_name));
-
-    my $sha3_hex_function = $self->rpc_client->web3_sha3($hex_function);
+    my $sha3_hex_function = '0x' . keccak_256_hex($function_name);
 
     return $sha3_hex_function;
 }
@@ -191,15 +195,24 @@ sub _prepare_transaction {
 
     my $data = $compiled_data . $encoded;
 
-    return Ethereum::RPC::Contract::ContractTransaction->new(
+    my $transaction = Ethereum::RPC::Contract::ContractTransaction->new(
         contract_address => $self->contract_address,
         rpc_client       => $self->rpc_client,
         data             => $self->append_prefix($data),
         from             => $self->from,
-        gas              => $self->gas,
-        gas_price        => $self->gas_price,
+        gas              => $self->gas
     );
 
+    if ($self->gas_price) {
+        $transaction->{gas_price} = $self->gas_price;
+        # if the gas price is set the transaction type is legacy
+        return $transaction;
+    }
+
+    # transaction type 2 EIP1559
+    $transaction->{max_fee_per_gas}          = $self->max_fee_per_gas          if $self->max_fee_per_gas;
+    $transaction->{max_priority_fee_per_gas} = $self->max_priority_fee_per_gas if $self->max_priority_fee_per_gas;
+    return $transaction;
 }
 
 =head2 encode
@@ -362,7 +375,7 @@ sub get_hex_param {
         if ($param =~ /^(?:0x|0X)([a-fA-F0-9]+)$/) {
             # hex without 0x
             $hex_value = $1;
-            $size = length(pack("H*", $hex_value));
+            $size      = length(pack("H*", $hex_value));
         } else {
             $hex_value = unpack("H*", $param);
             $size      = length($param);
@@ -410,7 +423,7 @@ sub read_event {
     my $res = $self->rpc_client->eth_getLogs([{
                 address   => $self->contract_address,
                 fromBlock => $from_block,
-                topics    => [$function_id]}]);
+                topics    => [$function_id] }]);
 
     return $res;
 }
