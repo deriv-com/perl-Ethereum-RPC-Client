@@ -9,6 +9,11 @@ use Path::Tiny;
 
 use Ethereum::RPC::Client;
 
+BEGIN {
+    plan skip_all => 'Needs Travis setup'
+        unless $ENV{TRAVIS};
+}
+
 my $rpc_client = Ethereum::RPC::Client->new;
 
 my $abi = path("./t/resources/abi_encoding/abi_encoding.abi")->slurp_utf8;
