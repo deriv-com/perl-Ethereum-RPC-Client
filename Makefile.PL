@@ -23,7 +23,9 @@ my %WriteMakefileArgs = (
     "Math::BigFloat" => "1.999811",
     "Math::BigInt" => "1.999811",
     "Mojo::UserAgent" => 0,
-    "Moo" => 0
+    "Moo" => 0,
+    "Digest::Keccak" => "0.05",
+    "Path::Tiny" => 0
   },
   "TEST_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0,
@@ -52,6 +54,8 @@ my %FallbackPrereqs = (
   "Math::BigInt" => "1.999811",
   "Mojo::UserAgent" => 0,
   "Moo" => 0,
+  "Digest::Keccak" => "0.05",
+  "Path::Tiny" => 0,
   "Test::CheckDeps" => "0.010",
   "Test::More" => "0.96"
 );
