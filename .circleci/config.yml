@@ -35,12 +35,9 @@ jobs:
       - *install_author_deps
       - *install_deps
       - run:
-          name: Setup gath
-          command: |
-            . config/geth_setup.sh
-      - run:
           name: Run Tests
           command: |
+            . config/geth_setup.sh
             dzil smoke --release --author && dzil cover -test -report codecov && dzil xtest
   release:
     docker:
