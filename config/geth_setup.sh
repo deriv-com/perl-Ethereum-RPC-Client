@@ -6,7 +6,7 @@ export RUNNABLE_FILES=/usr/local
 export NODE=geth
 
 mkdir $NODE && wget -qO- $ETHEREUM_URL | tar xvz -C $NODE --strip-components 1
-sudo cp $NODE/$NODE /usr/local
+cp $NODE/$NODE /usr/local
 
 cat > config/geth_script.js <<'EOF'
 console.log(eth.sendTransaction({from:eth.coinbase, to:eth.accounts[0], value: web3.toWei(100, "ether")}));
