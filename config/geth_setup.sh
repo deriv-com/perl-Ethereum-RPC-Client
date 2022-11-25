@@ -6,7 +6,7 @@ export RUNNABLE_FILES=/usr/local
 export NODE=geth
 
 mkdir $NODE && wget -qO- $ETHEREUM_URL | tar xvz -C $NODE --strip-components 1
-cp $NODE/$NODE /usr/local
+sudo cp $NODE/$NODE /usr/local
 
 cat > config/geth_script.js <<'EOF'
 console.log(eth.sendTransaction({from:eth.coinbase, to:eth.accounts[0], value: web3.toWei(100, "ether")}));
@@ -19,4 +19,5 @@ EOF
 
 $RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --exec "loadScript('config/geth_script.js');" console
 echo "middle of script";
-nohup $RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --mine --rpc --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3 &
+nohup $RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --mine --http &
+
