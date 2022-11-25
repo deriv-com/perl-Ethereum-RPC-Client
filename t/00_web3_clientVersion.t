@@ -5,7 +5,7 @@ use Ethereum::RPC::Client;
 
 BEGIN {
     plan skip_all => 'Needs Travis setup'
-        unless $ENV{TRAVIS};
+        unless $ENV{CIRCLECI};
 }
 
 my $eth                = Ethereum::RPC::Client->new();
