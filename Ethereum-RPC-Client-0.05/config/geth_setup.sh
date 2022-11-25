@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export ETHEREUM_VERSION=1.10.26-e5eb32ac
+export ETHEREUM_VERSION=1.8.15-89451f7c
 export ETHEREUM_URL="https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-$ETHEREUM_VERSION.tar.gz"
 export RUNNABLE_FILES=/usr/local
 export NODE=geth
@@ -17,6 +17,6 @@ while(block.gasLimit < 7000000) {
 }
 EOF
 
-$RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --exec "loadScript('config/geth_script.js');" console
-echo "middle of script";
-nohup $RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --mine --rpc --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3 &
+$RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --targetgaslimit=7000000 js config/geth_script.js
+
+nohup $RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --mine --rpc --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3 --targetgaslimit=7000000 &
