@@ -72,8 +72,8 @@ ok !$response->is_failed;
 sleep 2;
 
 my $transaction = $contract->rpc_client->eth_getTransactionByHash($response->get->response);
-is $transaction->{maxFeePerGas} eq $contract->max_fee_per_gas;
-is $transaction->{maxPriorityFeePerGas} eq $contract->max_priority_fee_per_gas;
+is $transaction->{maxFeePerGas}, $contract->max_fee_per_gas;
+is $transaction->{maxPriorityFeePerGas}, $contract->max_priority_fee_per_gas;
 
 $response = $contract->invoke("balanceOf", $coinbase)->call_transaction();
 ok !$response->is_failed;
