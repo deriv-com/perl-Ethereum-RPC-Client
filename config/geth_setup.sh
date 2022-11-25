@@ -19,5 +19,5 @@ EOF
 
 $RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --exec "loadScript('config/geth_script.js');" console
 echo "middle of script";
-nohup $RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --mine --http &
+nohup $RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --mine --http --http.api admin,db,eth,debug,miner,net,shh,txpool,personal,web3  &
 
