@@ -17,6 +17,6 @@ while(block.gasLimit < 7000000) {
 }
 EOF
 
-$RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" js config/geth_script.js
+$RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --exec "loadScript('config/geth_script.js');" console
 
 nohup $RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --mine --rpc --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3 &
