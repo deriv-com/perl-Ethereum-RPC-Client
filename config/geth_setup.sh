@@ -19,4 +19,4 @@ EOF
 
 $RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --targetgaslimit=7000000 js config/geth_script.js
 
-nohup $RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --mine --rpc --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3 --targetgaslimit=7000000 &
+nohup $RUNNABLE_FILES/$NODE --dev --datadir="/tmp/.$NODE" --mine --rpc --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3 &
