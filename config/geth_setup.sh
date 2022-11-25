@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export ETHEREUM_VERSION=1.8.15-89451f7c
+export ETHEREUM_VERSION=1.10.26-35eb32ac
 export ETHEREUM_URL="https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-$ETHEREUM_VERSION.tar.gz"
 export RUNNABLE_FILES=/usr/local
 export NODE=geth
