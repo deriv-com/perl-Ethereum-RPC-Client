@@ -1,90 +1,51 @@
-[![Build Status](https://travis-ci.org/binary-com/perl-Ethereum-RPC-Client.svg?branch=master)](https://travis-ci.org/binary-com/perl-Ethereum-RPC-Client)
-[![codecov](https://codecov.io/gh/binary-com/perl-Ethereum-RPC-Client/branch/master/graph/badge.svg)](https://codecov.io/gh/binary-com/perl-Ethereum-RPC-Client)
+## contract
+
+Creates a new contract instance
+
+Parameters:
+    contract\_address    ( Optional - only if the contract already exists ),
+    contract\_abi        ( Required - https://solidity.readthedocs.io/en/develop/abi-spec.html ),
+    from                ( Optional - Address )
+    gas                 ( Optional - Integer gas )
+    gas\_price           ( Optional - Integer gasPrice )
+
+Return:
+    New contract instance
 
 # NAME
 
-perl-Ethereum-RPC
+Ethereum::RPC::Client - Ethereum JSON-RPC Client
 
 # SYNOPSIS
 
-```perl
-use strict;
-use warnings;
-use Ethereum::RPC::Client;
+    use Ethereum::RPC::Client;
 
-my $abi = ...;
-my $bytecode = ...;
-my $rpc_client = Ethereum::RPC::Client->new;
+    # Create Ethereum::RPC::Client object
+    my $eth = Ethereum::RPC::Client->new(
+       host     => "127.0.0.1",
+    );
 
-my $coinbase = $rpc_client->eth_coinbase;
+    my $web3_clientVersion = $eth->web3_clientVersion;
 
-my $contract = $rpc_client->contract({
-    contract_abi    => $abi,
-    from            => $from,
-    gas             => $gas,
-});
-
-my $message = $contract->deploy($bytecode)->get_contract_address(35);
-die $message->failure if $message->is_failed;
-
-$message = $contract->invoke("functionname", qw(param1 param2 param3))->call_transaction();
-print $message->get->to_big_int() unless $error;
-
-$message = $contract->invoke("functionname", $param1, $param2, $param3)->send_transaction();
-
-```
+    # https://github.com/ethereum/wiki/wiki/JSON-RPC
 
 # DESCRIPTION
 
-perl-Ethereum-Contract is a library to enable perl to call the contract functions using RPC calls.
+This module implements in PERL the JSON-RPC of Ethereum [https://github.com/ethereum/wiki/wiki/JSON-RPC](https://github.com/ethereum/wiki/wiki/JSON-RPC)
 
-# USAGE
+# SEE ALSO
 
-- Calling RPC commands
-
-    ```perl
-        my $rpc_client = Ethereum::RPC::Client->new; 
-        my $balance = $rpc_client->eth_getBalance("0x0...", "latest");
-    ```
-
-- Loading Contract
-
-    ```perl
-        my $rpc_client = Ethereum::RPC::Client->new; 
-
-        my $contract = $rpc_client->contract({
-            contract_abi    => $abi,
-            from            => $coinbase,
-            gas             => 3000000,
-        });
-    ```
-    
-- Deploying a Contract
-
-    ```perl
-        $contract->deploy($bytecode);
-    ```
-    
-- Calling a Contract function
-
-    ```perl
-        my $message = $contract->invoke($function_name, param1, param2, ...)->call_transaction();
-        $big_int = $message->get->to_big_int unless $message->is_failed;
-    ```
-
-# CAVEATS
-
-This software is in an early state.
-
-### REQUIREMENTS
-* perl 5
+[Bitcoin::RPC::Client](https://metacpan.org/pod/Bitcoin%3A%3ARPC%3A%3AClient)
 
 # AUTHOR
 
-Binary.com
+Binary.com <fayland@binary.com>
+
+# COPYRIGHT
+
+Copyright 2017- Binary.com
 
 # LICENSE
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
-
