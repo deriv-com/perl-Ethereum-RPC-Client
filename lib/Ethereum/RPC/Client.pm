@@ -8,7 +8,7 @@ use JSON::MaybeXS;
 use Mojo::UserAgent;
 use Ethereum::RPC::Contract;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 has host => (
     is      => 'ro',
