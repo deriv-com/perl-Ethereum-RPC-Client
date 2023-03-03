@@ -36,6 +36,7 @@ sub AUTOLOAD {
     my $obj = {
         id     => $self->{id}++,
         method => $method,
+        jsonrpc => '2.0',
         params => (ref $_[0] ? $_[0] : [@_]),
     };
 
