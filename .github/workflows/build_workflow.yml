@@ -20,7 +20,7 @@ jobs:
         - '5.32'
         - '5.34'
     steps:
-    - uses: actions/checkout@v4.0.0
+    - uses: actions/checkout@v4
     - name: Install Dzil
       run: cpm install -g --no-test Dist::Zilla Dist::Zilla::App::Command::cover ExtUtils::MakeMaker
     - name: Install dzil author dependencies
@@ -38,7 +38,6 @@ jobs:
       run: |
         . config/geth_setup.sh
         dzil smoke --release --author && dzil cover -test -report codecov && dzil xtest
-
   release:
     if: github.ref == 'refs/heads/master'
     needs: test
@@ -46,7 +45,7 @@ jobs:
     container:
       image: perldocker/perl-tester:5.34
     steps:
-    - uses: actions/checkout@v4.0.0
+    - uses: actions/checkout@v4
     - name: Install Dzil
       run: cpm install -g --no-test Dist::Zilla Dist::Zilla::App::Command::cover ExtUtils::MakeMaker
     - name: Install dzil author dependencies
