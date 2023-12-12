@@ -26,7 +26,7 @@ my %WriteMakefileArgs = (
     "Math::BigFloat" => "1.999814",
     "Math::BigInt" => "1.999814",
     "Mojo::UserAgent" => 0,
-    "Mojolicious" => "== 7.29",
+    "Mojolicious" => "7.29",
     "Moo" => 0,
     "Path::Tiny" => 0,
     "Scalar::Util" => 0,
