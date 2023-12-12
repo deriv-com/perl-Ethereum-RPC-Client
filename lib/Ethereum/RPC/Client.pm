@@ -31,7 +31,7 @@ sub AUTOLOAD {
     return if ($method eq 'DESTROY');
 
     my $url = "http://" . $self->host . ":" . $self->port;
-
+    print STDERR "url: $url\n";
     $self->{id} = 1;
     my $obj = {
         id     => $self->{id}++,
